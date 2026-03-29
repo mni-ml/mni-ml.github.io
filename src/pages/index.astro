@@ -1,0 +1,55 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+
+const articles = (await getCollection('articles'))
+  .filter((article) => !article.data.draft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout
+  title="TSTorch Notebook"
+  description="Research notebook for long-form ML and WebGPU articles"
+>
+  <section class="hero">
+    <h1>TSTorch Notebook</h1>
+    <p>Research notebook exploring machine learning concepts, automatic differentiation, and GPU computing with TypeScript and WebGPU.</p>
+  </section>
+
+  <section class="articles">
+    {articles.map((article) => (
+      <ArticleCard
+        title={article.data.title}
+        description={article.data.description}
+        pubDate={article.data.pubDate}
+        slug={article.id}
+        tags={article.data.tags}
+      />
+    ))}
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    margin-bottom: 3rem;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .hero p {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    max-width: 36rem;
+    margin: 0;
+  }
+
+  .articles {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+</style>

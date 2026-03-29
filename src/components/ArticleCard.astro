@@ -1,0 +1,89 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  slug: string;
+  tags: string[];
+}
+
+const { title, description, pubDate, slug, tags } = Astro.props;
+const formattedDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article class="article-card">
+  <a href={`/articles/${slug}/`}>
+    <h2>{title}</h2>
+    <p class="description">{description}</p>
+    <div class="meta">
+      <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+      {tags.length > 0 && (
+        <ul class="tags">
+          {tags.map((tag) => (
+            <li class="tag">{tag}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </a>
+</article>
+
+<style>
+  .article-card {
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .article-card:hover {
+    border-color: var(--color-text-muted);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  a {
+    display: block;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+
+  .description {
+    color: var(--color-text-muted);
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .tag {
+    background: var(--color-surface);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+  }
+</style>

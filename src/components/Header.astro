@@ -1,0 +1,63 @@
+---
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/rss.xml', label: 'RSS' },
+];
+---
+
+<header class="site-header">
+  <nav>
+    <a href="/" class="site-title">TSTorch Notebook</a>
+    <ul class="nav-links">
+      {navLinks.map(({ href, label }) => (
+        <li>
+          <a href={href} class:list={[{ active: Astro.url.pathname === href }]}>
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--color-border);
+    padding: 1rem 0;
+  }
+
+  nav {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .site-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--color-text-muted);
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    color: var(--color-text);
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+import '../styles/article.css';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  author: string;
+  tags: string[];
+  cover?: string;
+  ogImage?: string;
+  headings: { depth: number; slug: string; text: string }[];
+  prevArticle?: { slug: string; title: string };
+  nextArticle?: { slug: string; title: string };
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  author,
+  tags,
+  ogImage,
+  headings,
+  prevArticle,
+  nextArticle,
+} = Astro.props;
+
+const formattedPubDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const formattedUpdatedDate = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description,
+  author: { '@type': 'Person', name: author },
+  datePublished: pubDate.toISOString(),
+  ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={ogImage}
+  type="article"
+  pubDate={pubDate}
+  tags={tags}
+>
+  <article class="article-content">
+    <header class="article-header">
+      <h1>{title}</h1>
+      <div class="article-meta">
+        <span class="author">{author}</span>
+        <time datetime={pubDate.toISOString()}>{formattedPubDate}</time>
+        {updatedDate && (
+          <span class="updated">
+            Updated <time datetime={updatedDate.toISOString()}>{formattedUpdatedDate}</time>
+          </span>
+        )}
+      </div>
+      {tags.length > 0 && (
+        <ul class="article-tags">
+          {tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )}
+    </header>
+
+    <TableOfContents headings={headings} />
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <nav class="article-nav">
+      {prevArticle && (
+        <a href={`/articles/${prevArticle.slug}/`} class="nav-prev">
+          &larr; {prevArticle.title}
+        </a>
+      )}
+      {nextArticle && (
+        <a href={`/articles/${nextArticle.slug}/`} class="nav-next">
+          {nextArticle.title} &rarr;
+        </a>
+      )}
+    </nav>
+  </article>
+
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</BaseLayout>

@@ -1,0 +1,4 @@
+{
+  "name": "tstorch-notebook",
+  "pages_build_output_dir": "./dist"
+}
