@@ -22,8 +22,10 @@ jobs:
 
       - run: npm run build
 
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ./dist --project-name=tstorch-notebook
+      - name: Deploy to Cloudflare Pages
+        run: |
+          npx wrangler pages project create tstorch-notebook --production-branch=main 2>/dev/null || true
+          npx wrangler pages deploy ./dist --project-name=tstorch-notebook
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
