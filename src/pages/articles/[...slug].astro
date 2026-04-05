@@ -1,10 +1,11 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import { getAllArticles } from '../../lib/articles';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
 
 export async function getStaticPaths() {
-  const articles = (await getCollection('articles'))
-    .filter((a) => !a.data.draft)
+  const articles = (await getAllArticles())
+    .slice()
     .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
 
   return articles.map((article, i) => ({

@@ -1,11 +1,9 @@
 import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
+import { getAllArticles } from '../lib/articles';
 import type { APIContext } from 'astro';
 
 export async function GET(context: APIContext) {
-  const articles = (await getCollection('articles'))
-    .filter((a) => !a.data.draft)
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+  const articles = await getAllArticles();
 
   return rss({
     title: 'TSTorch Notebook',
