@@ -4,6 +4,7 @@ import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import remarkMath from 'remark-math';
+import remarkSmartypants from 'remark-smartypants';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
@@ -15,7 +16,7 @@ export default defineConfig({
     sitemap(),
   ],
   markdown: {
-    remarkPlugins: [remarkMath],
+    remarkPlugins: [remarkMath, remarkSmartypants],
     rehypePlugins: [[rehypeKatex, { output: 'html' }]],
     shikiConfig: {
       theme: 'github-dark',

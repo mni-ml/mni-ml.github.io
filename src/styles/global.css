@@ -24,7 +24,6 @@ html {
   background: var(--bg);
   line-height: 1.7;
   font-size: 13px;
-  -webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -32,6 +31,10 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
 a {
