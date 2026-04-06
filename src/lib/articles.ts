@@ -7,5 +7,5 @@ export async function getAllArticles() {
   ]);
   return [...local, ...notion]
     .filter((a) => !a.data.draft)
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+    .sort((a, b) => a.data.order - b.data.order);
 }

@@ -1,24 +1,15 @@
 :root {
+  --bg: #0d1117;
+  --surf: #131923;
+  --bdr: #1a2535;
+  --txt: #dde4ed;
+  --muted: #4a607a;
+  --acc: #38bdf8;
+  --acc-dim: rgba(56, 189, 248, 0.07);
+  --soon: #2a1f0d;
+  --soon-txt: #7a5c2a;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
   --content-width: 48rem;
-  --color-text: #1a1a2e;
-  --color-text-muted: #6b7280;
-  --color-bg: #ffffff;
-  --color-surface: #f9fafb;
-  --color-border: #e5e7eb;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text: #e5e7eb;
-    --color-text-muted: #9ca3af;
-    --color-bg: #0f172a;
-    --color-surface: #1e293b;
-    --color-border: #334155;
-    --color-accent: #60a5fa;
-    --color-accent-hover: #93bbfd;
-  }
 }
 
 *,
@@ -28,11 +19,11 @@
 }
 
 html {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    sans-serif;
-  color: var(--color-text);
-  background: var(--color-bg);
+  font-family: var(--font-mono);
+  color: var(--txt);
+  background: var(--bg);
   line-height: 1.7;
+  font-size: 13px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -43,21 +34,15 @@ body {
   flex-direction: column;
 }
 
-main {
-  flex: 1;
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  width: 100%;
-}
-
 a {
-  color: var(--color-accent);
+  color: var(--acc);
+  text-decoration: none;
   transition: color 0.2s;
 }
 
 a:hover {
-  color: var(--color-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 img {
@@ -65,17 +50,9 @@ img {
   height: auto;
 }
 
-/* Shiki dual-theme support */
+/* Shiki — dark only */
 .astro-code,
 .astro-code span {
-  color: var(--shiki-light) !important;
-  background-color: var(--shiki-light-bg) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  .astro-code,
-  .astro-code span {
-    color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
-  }
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
 }

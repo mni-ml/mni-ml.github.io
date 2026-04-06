@@ -1,53 +1,125 @@
 ---
-import { getAllArticles } from '../lib/articles';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ArticleCard from '../components/ArticleCard.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { curriculum } from '../lib/curriculum';
+import { getAllArticles } from '../lib/articles';
 
 const articles = await getAllArticles();
+const articlesBySlug = new Map(articles.map((a) => [a.id, a]));
 ---
 
 <BaseLayout
-  title="TSTorch Notebook"
-  description="Research notebook for long-form ML and WebGPU articles"
+  title="mni-ml"
+  description="A curriculum for understanding machine learning from scratch"
 >
-  <section class="hero">
-    <h1>TSTorch Notebook</h1>
-    <p>Research notebook exploring machine learning concepts, automatic differentiation, and GPU computing with TypeScript and WebGPU.</p>
-  </section>
+  <div class="mni-layout">
+    <Sidebar />
+    <main class="mni-content">
+      <div class="home-eyebrow">curriculum</div>
+      <h1 class="home-title">mni-ml</h1>
+      <p class="home-desc">
+        Understanding machine learning by building it from scratch.
+      </p>
 
-  <section class="articles">
-    {articles.map((article) => (
-      <ArticleCard
-        title={article.data.title}
-        description={article.data.description}
-        pubDate={article.data.pubDate}
-        slug={article.id}
-        tags={article.data.tags}
-      />
-    ))}
-  </section>
+      <div class="modules">
+        {curriculum.map((mod) => {
+          const article = articlesBySlug.get(mod.slug);
+          return (
+            <a href={`/articles/${mod.slug}/`} class="module-card">
+              <span class="module-order">{mod.order}</span>
+              <div>
+                <div class="module-title">{mod.title}</div>
+                {article && (
+                  <div class="module-desc">{article.data.description}</div>
+                )}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </main>
+  </div>
 </BaseLayout>
 
 <style>
-  .hero {
-    margin-bottom: 3rem;
+  .mni-layout {
+    display: flex;
+    min-height: calc(100dvh - 44px);
   }
 
-  .hero h1 {
-    font-size: 2.5rem;
-    margin: 0 0 0.75rem;
+  .mni-content {
+    flex: 1;
+    padding: 36px 48px;
   }
 
-  .hero p {
-    color: var(--color-text-muted);
-    font-size: 1.1rem;
-    max-width: 36rem;
-    margin: 0;
+  .home-eyebrow {
+    font-size: 10px;
+    color: var(--acc);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
   }
 
-  .articles {
+  .home-title {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    margin: 0 0 6px;
+  }
+
+  .home-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0 0 32px;
+    padding-bottom: 20px;
+    border-bottom: 0.5px solid var(--bdr);
+  }
+
+  .modules {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1px;
+  }
+
+  .module-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 0.5px solid var(--bdr);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--txt);
+    transition: border-color 0.2s;
+    margin-bottom: 8px;
+  }
+
+  .module-card:hover {
+    border-color: var(--acc);
+    text-decoration: none;
+  }
+
+  .module-order {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 18px;
+    padding-top: 1px;
+  }
+
+  .module-title {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .module-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .mni-content {
+      padding: 24px 16px;
+    }
   }
 </style>

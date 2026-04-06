@@ -18,6 +18,7 @@ export type ArticleMeta = {
   tags: string[];
   draft: boolean;
   cover?: string;
+  order: number;
 };
 
 export type ArticleFull = ArticleMeta & {
@@ -209,6 +210,16 @@ function getUrlOrRichText(
   return rt.length > 0 ? rt : undefined;
 }
 
+function getNumberProperty(
+  properties: Record<string, unknown>,
+  names: string[],
+): number {
+  const prop = findPropertyRecord(properties, names, ["number"]);
+  if (!prop) return 0;
+  const num = (prop as any).number;
+  return typeof num === "number" ? num : 0;
+}
+
 function requireField(value: string, name: string): string {
   if (!value) throw new Error(`Missing required Notion property: ${name}`);
   return value;
@@ -230,6 +241,7 @@ export function normalizeNotionRow(page: NotionPage): ArticleMeta {
   const tags = getMultiSelectNames(props, ["tags", "Tags"]);
   const cover = getUrlOrRichText(props, ["imageUrl", "ImageUrl", "image", "cover"]);
   const status = getSelectName(props, ["status", "Status"]);
+  const order = getNumberProperty(props, ["order", "Order"]);
 
   return {
     title,
@@ -240,6 +252,7 @@ export function normalizeNotionRow(page: NotionPage): ArticleMeta {
     tags,
     draft: status !== "Published",
     cover,
+    order,
   };
 }
 

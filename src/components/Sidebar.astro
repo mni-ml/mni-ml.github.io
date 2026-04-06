@@ -1,0 +1,100 @@
+---
+import { curriculum, type Module } from '../lib/curriculum';
+
+interface Props {
+  activeSlug?: string;
+}
+
+const { activeSlug } = Astro.props;
+const activeModule = curriculum.find((m) => m.slug === activeSlug);
+---
+
+<aside class="mni-toc">
+  <div class="mni-toc-label">curriculum</div>
+  {curriculum.map((mod) => (
+    <>
+      <a
+        href={`/articles/${mod.slug}/`}
+        class:list={['mni-toc-module', { active: mod.slug === activeSlug }]}
+      >
+        {mod.title}
+      </a>
+      {mod.slug === activeSlug && mod.subSections && (
+        <>
+          {mod.subSections.filter((s) => !s.soon).map((sub) => (
+            <div class="mni-toc-sub">{sub.title}</div>
+          ))}
+          {mod.subSections.some((s) => s.soon) && (
+            <>
+              <div class="mni-toc-sep" />
+              {mod.subSections.filter((s) => s.soon).map((sub) => (
+                <div class="mni-toc-sub soon">{sub.title}</div>
+              ))}
+            </>
+          )}
+        </>
+      )}
+    </>
+  ))}
+</aside>
+
+<style>
+  .mni-toc {
+    width: 192px;
+    flex-shrink: 0;
+    border-right: 0.5px solid var(--bdr);
+    padding: 24px 0;
+  }
+
+  .mni-toc-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 20px 10px;
+  }
+
+  .mni-toc-module {
+    display: block;
+    font-size: 12px;
+    padding: 5px 20px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .mni-toc-module:hover {
+    color: var(--txt);
+    text-decoration: none;
+  }
+
+  .mni-toc-module.active {
+    color: var(--txt);
+    font-weight: 500;
+  }
+
+  .mni-toc-sub {
+    font-size: 11px;
+    padding: 4px 20px 4px 30px;
+    color: var(--muted);
+    border-left: 2px solid transparent;
+  }
+
+  .mni-toc-sub.soon {
+    color: var(--soon-txt);
+    font-style: italic;
+  }
+
+  .mni-toc-sep {
+    height: 0.5px;
+    background: var(--bdr);
+    margin: 12px 20px;
+  }
+
+  @media (max-width: 768px) {
+    .mni-toc {
+      display: none;
+    }
+  }
+</style>

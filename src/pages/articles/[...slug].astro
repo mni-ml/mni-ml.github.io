@@ -1,32 +1,22 @@
 ---
 import { render } from 'astro:content';
 import { getAllArticles } from '../../lib/articles';
-import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import LessonLayout from '../../layouts/LessonLayout.astro';
 
 export async function getStaticPaths() {
-  const articles = (await getAllArticles())
-    .slice()
-    .sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+  const articles = await getAllArticles();
 
-  return articles.map((article, i) => ({
+  return articles.map((article) => ({
     params: { slug: article.id },
-    props: {
-      article,
-      prevArticle: articles[i - 1]
-        ? { slug: articles[i - 1].id, title: articles[i - 1].data.title }
-        : undefined,
-      nextArticle: articles[i + 1]
-        ? { slug: articles[i + 1].id, title: articles[i + 1].data.title }
-        : undefined,
-    },
+    props: { article },
   }));
 }
 
-const { article, prevArticle, nextArticle } = Astro.props;
-const { Content, headings } = await render(article);
+const { article } = Astro.props;
+const { Content } = await render(article);
 ---
 
-<ArticleLayout
+<LessonLayout
   title={article.data.title}
   description={article.data.description}
   pubDate={article.data.pubDate}
@@ -34,9 +24,8 @@ const { Content, headings } = await render(article);
   author={article.data.author}
   tags={article.data.tags}
   ogImage={article.data.ogImage}
-  headings={headings}
-  prevArticle={prevArticle}
-  nextArticle={nextArticle}
+  slug={article.id}
+  order={article.data.order}
 >
   <Content />
-</ArticleLayout>
+</LessonLayout>

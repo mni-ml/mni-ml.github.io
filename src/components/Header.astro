@@ -1,63 +1,60 @@
 ---
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/rss.xml', label: 'RSS' },
+  { href: '/', label: 'home' },
+  { href: '/rss.xml', label: 'rss' },
 ];
 ---
 
-<header class="site-header">
-  <nav>
-    <a href="/" class="site-title">TSTorch Notebook</a>
-    <ul class="nav-links">
-      {navLinks.map(({ href, label }) => (
-        <li>
-          <a href={href} class:list={[{ active: Astro.url.pathname === href }]}>
-            {label}
-          </a>
-        </li>
-      ))}
-    </ul>
+<header class="mni-nav">
+  <a href="/" class="mni-brand">
+    <svg width="22" height="16" viewBox="0 0 60 44" fill="none">
+      <polygon points="5,22 18,3 30,15 42,3 55,22 42,41 30,29 18,41" fill="white" />
+    </svg>
+    mni-ml
+  </a>
+  <nav class="mni-nav-links">
+    {navLinks.map(({ href, label }) => (
+      <a href={href}>{label}</a>
+    ))}
   </nav>
 </header>
 
 <style>
-  .site-header {
-    border-bottom: 1px solid var(--color-border);
-    padding: 1rem 0;
-  }
-
-  nav {
-    max-width: var(--content-width);
-    margin: 0 auto;
-    padding: 0 1.5rem;
+  .mni-nav {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    padding: 13px 24px;
+    border-bottom: 0.5px solid var(--bdr);
   }
 
-  .site-title {
-    font-weight: 700;
-    font-size: 1.25rem;
-    text-decoration: none;
-    color: var(--color-text);
-  }
-
-  .nav-links {
+  .mni-brand {
     display: flex;
-    gap: 1.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .nav-links a {
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--txt);
     text-decoration: none;
-    color: var(--color-text-muted);
-    transition: color 0.2s;
   }
 
-  .nav-links a:hover,
-  .nav-links a.active {
-    color: var(--color-text);
+  .mni-brand:hover {
+    text-decoration: none;
+  }
+
+  .mni-nav-links {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+  }
+
+  .mni-nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .mni-nav-links a:hover {
+    color: var(--acc);
+    text-decoration: none;
   }
 </style>

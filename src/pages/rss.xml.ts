@@ -6,9 +6,9 @@ export async function GET(context: APIContext) {
   const articles = await getAllArticles();
 
   return rss({
-    title: 'TSTorch Notebook',
+    title: 'mni-ml',
     description:
-      'Research notebook for long-form ML and WebGPU articles',
+      'A curriculum for understanding machine learning from scratch',
     site: context.site!,
     items: articles.map((article) => ({
       title: article.data.title,

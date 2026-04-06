@@ -176,6 +176,7 @@ export function notionLoader(): Loader {
             draft: meta.draft,
             cover: meta.cover,
             ogImage: meta.cover,
+            order: meta.order,
           },
         });
 

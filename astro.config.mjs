@@ -7,7 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
-  site: 'https://notebook.tstorch.dev',
+  site: 'https://mni-ml.pages.dev',
   output: 'static',
   integrations: [
     mdx(),
@@ -18,10 +18,7 @@ export default defineConfig({
     remarkPlugins: [remarkMath],
     rehypePlugins: [[rehypeKatex, { output: 'html' }]],
     shikiConfig: {
-      themes: {
-        light: 'github-light',
-        dark: 'github-dark',
-      },
+      theme: 'github-dark',
     },
   },
 });
