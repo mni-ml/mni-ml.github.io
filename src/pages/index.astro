@@ -15,7 +15,6 @@ const articlesBySlug = new Map(articles.map((a) => [a.id, a]));
   <div class="mni-layout">
     <Sidebar />
     <main class="mni-content">
-      <div class="home-eyebrow">curriculum</div>
       <h1 class="home-title">mni-ml</h1>
       <p class="home-desc">
         Understanding machine learning by building it from scratch.
@@ -50,14 +49,6 @@ const articlesBySlug = new Map(articles.map((a) => [a.id, a]));
   .mni-content {
     flex: 1;
     padding: 36px 48px;
-  }
-
-  .home-eyebrow {
-    font-size: 10px;
-    color: var(--acc);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
   }
 
   .home-title {
