@@ -6,6 +6,7 @@ interface Props {
 }
 
 const { activeSlug } = Astro.props;
+const base = import.meta.env.BASE_URL;
 const activeModule = curriculum.find((m) => m.slug === activeSlug);
 ---
 
@@ -14,7 +15,7 @@ const activeModule = curriculum.find((m) => m.slug === activeSlug);
   {curriculum.map((mod) => (
     <>
       <a
-        href={`/articles/${mod.slug}/`}
+        href={`${base}/articles/${mod.slug}/`}
         class:list={['mni-toc-module', { active: mod.slug === activeSlug }]}
       >
         {mod.title}

@@ -8,7 +8,8 @@ import remarkSmartypants from 'remark-smartypants';
 import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
-  site: 'https://mni-ml.pages.dev',
+  site: 'https://mni-ml.github.io',
+  base: '/blog',
   output: 'static',
   integrations: [
     mdx(),

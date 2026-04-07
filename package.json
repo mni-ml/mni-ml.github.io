@@ -9,7 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "astro build && wrangler pages deploy ./dist",
+    "deploy": "astro build",
     "postinstall": "node scripts/copy-katex.mjs",
     "astro": "astro"
   },
@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "wrangler": "^4.73.0"
+    "@types/react-dom": "^19.2.3"
   }
 }
