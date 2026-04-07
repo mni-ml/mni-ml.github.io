@@ -4,6 +4,7 @@ import type { APIContext } from 'astro';
 
 export async function GET(context: APIContext) {
   const articles = await getAllArticles();
+  const base = import.meta.env.BASE_URL;
 
   return rss({
     title: 'mni-ml',
@@ -14,7 +15,7 @@ export async function GET(context: APIContext) {
       title: article.data.title,
       pubDate: article.data.pubDate,
       description: article.data.description,
-      link: `/articles/${article.id}/`,
+      link: `${base}/articles/${article.id}/`,
     })),
   });
 }
