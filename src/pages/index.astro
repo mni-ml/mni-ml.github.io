@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { curriculum } from '../lib/curriculum';
-import { getAllArticles } from '../lib/articles';
+import { getAllArticles, getArticleNav } from '../lib/articles';
 
 const articles = await getAllArticles();
-const articlesBySlug = new Map(articles.map((a) => [a.id, a]));
+const articleNav = getArticleNav(articles);
 const base = import.meta.env.BASE_URL;
 ---
 
@@ -14,7 +13,7 @@ const base = import.meta.env.BASE_URL;
   description="A curriculum for understanding machine learning from scratch"
 >
   <div class="mni-layout">
-    <Sidebar />
+    <Sidebar articleNav={articleNav} railTitle="articles" />
     <main class="mni-content">
       <h1 class="home-title">mni-ml</h1>
       <p class="home-desc">
@@ -22,20 +21,15 @@ const base = import.meta.env.BASE_URL;
       </p>
 
       <div class="modules">
-        {curriculum.map((mod) => {
-          const article = articlesBySlug.get(mod.slug);
-          return (
-            <a href={`${base}/articles/${mod.slug}/`} class="module-card">
-              <span class="module-order">{mod.order}</span>
-              <div>
-                <div class="module-title">{mod.title}</div>
-                {article && (
-                  <div class="module-desc">{article.data.description}</div>
-                )}
-              </div>
-            </a>
-          );
-        })}
+        {articleNav.map((article) => (
+          <a href={`${base}/articles/${article.slug}/`} class="module-card">
+            <span class="module-order">{article.sequence.toString().padStart(2, '0')}</span>
+            <div>
+              <div class="module-title">{article.title}</div>
+              <div class="module-desc">{article.description}</div>
+            </div>
+          </a>
+        ))}
       </div>
     </main>
   </div>

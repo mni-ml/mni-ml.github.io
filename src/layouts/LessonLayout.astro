@@ -2,7 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import ArticleVisual from '../components/ArticleVisual.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { getPrevNext } from '../lib/curriculum';
+import type { ArticleNavItem, ArticlePresentation, ArticleRailSection } from '../lib/articles';
 import '../styles/article.css';
 
 interface Props {
@@ -14,7 +14,12 @@ interface Props {
   tags: string[];
   ogImage?: string;
   slug: string;
-  order: number;
+  sequence: number;
+  articleNav: ArticleNavItem[];
+  sectionNav: ArticleRailSection[];
+  prevArticle?: ArticleNavItem;
+  nextArticle?: ArticleNavItem;
+  presentation?: ArticlePresentation;
 }
 
 const {
@@ -26,10 +31,13 @@ const {
   tags,
   ogImage,
   slug,
-  order,
+  sequence,
+  articleNav,
+  sectionNav,
+  prevArticle,
+  nextArticle,
+  presentation,
 } = Astro.props;
-
-const { prev, next } = getPrevNext(slug);
 const base = import.meta.env.BASE_URL;
 
 const jsonLd = {
@@ -52,9 +60,14 @@ const jsonLd = {
   tags={tags}
 >
   <div class="mni-layout">
-    <Sidebar activeSlug={slug} />
+    <Sidebar
+      activeSlug={slug}
+      articleNav={articleNav}
+      sectionNav={sectionNav}
+      railTitle={presentation?.railTitle}
+    />
     <main class="mni-content">
-      <div class="lesson-eyebrow">module {order}</div>
+      <div class="lesson-eyebrow">module {sequence}</div>
       <h1 class="lesson-title">{title}</h1>
       <div class="lesson-meta">{description}</div>
       <ArticleVisual />
@@ -64,16 +77,16 @@ const jsonLd = {
       </div>
 
       <nav class="lesson-pager">
-        {prev ? (
-          <a href={`${base}/articles/${prev.slug}/`} class="lesson-btn">
-            &larr; {prev.title}
+        {prevArticle ? (
+          <a href={`${base}/articles/${prevArticle.slug}/`} class="lesson-btn">
+            &larr; {prevArticle.title}
           </a>
         ) : (
           <span />
         )}
-        {next ? (
-          <a href={`${base}/articles/${next.slug}/`} class="lesson-btn">
-            {next.title} &rarr;
+        {nextArticle ? (
+          <a href={`${base}/articles/${nextArticle.slug}/`} class="lesson-btn">
+            {nextArticle.title} &rarr;
           </a>
         ) : (
           <span class="lesson-btn disabled">Next &rarr;</span>

@@ -1,6 +1,6 @@
 ---
 import { render } from 'astro:content';
-import { getAllArticles } from '../../lib/articles';
+import { getAdjacentArticles, getAllArticles, getArticleNav, getArticleRailSections } from '../../lib/articles';
 import LessonLayout from '../../layouts/LessonLayout.astro';
 
 export async function getStaticPaths() {
@@ -13,7 +13,11 @@ export async function getStaticPaths() {
 }
 
 const { article } = Astro.props;
-const { Content } = await render(article);
+const articles = await getAllArticles();
+const articleNav = getArticleNav(articles);
+const { current, prev, next } = getAdjacentArticles(articleNav, article.id);
+const { Content, headings } = await render(article);
+const sectionNav = getArticleRailSections(headings, article.data.presentation);
 ---
 
 <LessonLayout
@@ -25,7 +29,12 @@ const { Content } = await render(article);
   tags={article.data.tags}
   ogImage={article.data.ogImage}
   slug={article.id}
-  order={article.data.order}
+  sequence={current?.sequence ?? 1}
+  articleNav={articleNav}
+  sectionNav={sectionNav}
+  prevArticle={prev}
+  nextArticle={next}
+  presentation={article.data.presentation}
 >
   <Content />
 </LessonLayout>
