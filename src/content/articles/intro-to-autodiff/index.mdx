@@ -2,12 +2,23 @@
 title: "Introduction to Automatic Differentiation"
 description: "Exploring forward and reverse mode automatic differentiation, the chain rule, and building a minimal autograd engine in TypeScript."
 pubDate: 2026-03-10
+order: 3
 author: "TSTorch Team"
 tags: ["autodiff", "machine-learning", "typescript"]
 draft: false
 tstorchBundles: ["gradient-viz"]
+presentation:
+  poster:
+    eyebrow: reverse mode
+    title: gradient signal trace
+    summary: Follow how a scalar loss pushes sensitivity backward through a computation graph and turns local derivatives into a full training signal
+    chips:
+      - chain rule
+      - adjoints
+      - graph walk
 ---
 
+import ArticleCallout from '@/components/article/ArticleCallout.astro';
 import GradientViz from '@/components/tstorch/GradientViz.tsx';
 
 Automatic differentiation (AD) is the backbone of modern deep learning. Unlike symbolic differentiation (which manipulates expressions) or numerical differentiation (which approximates via finite differences), AD computes exact derivatives by decomposing programs into elementary operations and applying the chain rule systematically.
@@ -37,6 +48,10 @@ $$
 $$
 
 where $\bar{v}_i = \frac{\partial L}{\partial v_i}$ is the *adjoint*. This computes one **row** of the Jacobian per pass — efficient when $m \ll n$, which is exactly the case in ML (scalar loss, many parameters).
+
+<ArticleCallout eyebrow="Mental model" title="Why reverse mode dominates training">
+  <p>In most learning systems, thousands or millions of parameters feed into one scalar loss. Reverse mode matches that shape: one backward pass distributes gradient information to every upstream value without recomputing a separate derivative pass per parameter.</p>
+</ArticleCallout>
 
 ## A Minimal Value Class
 

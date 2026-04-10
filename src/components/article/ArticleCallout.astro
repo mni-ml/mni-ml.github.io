@@ -1,0 +1,23 @@
+---
+import ArtifactPanel from './ArtifactPanel.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  tone?: 'default' | 'accent';
+}
+
+const { eyebrow = 'Callout', title, tone = 'accent' } = Astro.props;
+---
+
+<ArtifactPanel eyebrow={eyebrow} title={title} tone={tone} panelClass="article-callout">
+  <div class="article-callout__body">
+    <slot />
+  </div>
+</ArtifactPanel>
+
+<style>
+  .article-callout__body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

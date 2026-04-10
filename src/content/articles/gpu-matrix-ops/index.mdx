@@ -2,12 +2,23 @@
 title: "GPU-Accelerated Matrix Operations with WebGPU"
 description: "Deep dive into WGSL compute shaders for matrix multiplication, memory layouts, and how TSTorch leverages WebGPU for tensor operations."
 pubDate: 2026-03-14
+order: 4
 author: "TSTorch Team"
 tags: ["webgpu", "wgsl", "linear-algebra", "gpu"]
 draft: false
 tstorchBundles: ["tensor-playground"]
+presentation:
+  poster:
+    eyebrow: compute pipeline
+    title: tiled matrix path
+    summary: The browser-side pipeline stages data through buffers, workgroups, and shader dispatch to turn matrix math into coordinated GPU work
+    chips:
+      - workgroups
+      - memory layout
+      - dispatch
 ---
 
+import ArticleCallout from '@/components/article/ArticleCallout.astro';
 import WebGPUDetect from '@/components/tstorch/WebGPUDetect.tsx';
 import TensorPlayground from '@/components/tstorch/TensorPlayground.tsx';
 
@@ -34,6 +45,10 @@ $$
 This means element $A_{2,3}$ of a $4 \times 4$ matrix lives at buffer offset $2 \times 4 + 3 = 11$.
 
 Understanding memory layout is critical for performance — accessing contiguous memory (coalesced access) is dramatically faster than strided access on GPUs.
+
+<ArticleCallout eyebrow="Performance lens" title="Parallelism alone is not enough">
+  <p>A shader can launch thousands of threads and still underperform if those threads read memory in scattered patterns. The real win comes from pairing parallel work with layouts that let neighboring threads fetch neighboring data.</p>
+</ArticleCallout>
 
 ## WGSL Compute Shader
 
