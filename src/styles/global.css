@@ -1,13 +1,19 @@
 :root {
-  --bg: #0d1117;
-  --surf: #131923;
-  --bdr: #1a2535;
-  --txt: #dde4ed;
-  --muted: #6b839e;
-  --acc: #38bdf8;
-  --acc-dim: rgba(56, 189, 248, 0.07);
-  --soon: #2a1f0d;
-  --soon-txt: #7a5c2a;
+  --bg: #0c0d0c;
+  --surf: #141614;
+  --surf-elev: #1a1d19;
+  --bdr: #2a2e28;
+  --txt: #ebe7de;
+  --muted: #9b978d;
+  --acc: #8aa05f;
+  --acc-bright: #b2cb7a;
+  --acc-dim: color-mix(in srgb, var(--acc) 12%, transparent);
+  --grid-line: rgba(152, 170, 121, 0.16);
+  --shadow-strong: rgba(0, 0, 0, 0.46);
+  --soon: #2c2415;
+  --soon-txt: #9d7b40;
+  --font-body: 'Avenir Next', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-display: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
   --content-width: 48rem;
 }
@@ -19,11 +25,11 @@
 }
 
 html {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   color: var(--txt);
   background: var(--bg);
   line-height: 1.7;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 body {
@@ -51,6 +57,13 @@ a:hover {
 img {
   max-width: 100%;
   height: auto;
+}
+
+body.immersive-body {
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(138, 160, 95, 0.08), transparent 30%),
+    linear-gradient(180deg, #0b0c0b 0%, #0c0d0c 100%);
 }
 
 /* Shiki — dark only */

@@ -8,114 +8,349 @@ interface Props {
   railTitle?: string;
 }
 
-const { articleNav, activeSlug, sectionNav = [], railTitle = 'curriculum' } = Astro.props;
+const { articleNav, activeSlug, sectionNav = [], railTitle = 'field guide' } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const activeArticle = articleNav.find((article) => article.slug === activeSlug);
+const visibleSections = sectionNav.filter((section) => !section.soon);
+const soonSections = sectionNav.filter((section) => section.soon);
 ---
 
-<aside class="mni-toc">
-  <div class="mni-toc-label">{railTitle}</div>
-  {articleNav.map((article) => (
-    <>
-      <a
-        href={`${base}/articles/${article.slug}/`}
-        class:list={['mni-toc-module', { active: article.slug === activeSlug }]}
-      >
-        <span class="mni-toc-number">{article.sequence.toString().padStart(2, '0')}</span>
-        <span>{article.title}</span>
-      </a>
-      {article.slug === activeSlug && sectionNav.length > 0 && (
-        <>
-          {sectionNav.filter((section) => !section.soon).map((section) => (
+<div class="rail-mobile">
+  <details class="rail-mobile__drawer">
+    <summary class="rail-mobile__summary">
+      <span class="rail-mobile__eyebrow">{railTitle}</span>
+      <span class="rail-mobile__title">{activeArticle?.title ?? 'Browse articles'}</span>
+    </summary>
+
+    <div class="rail-mobile__panel">
+      <nav class="rail-mobile__group" aria-label="Articles">
+        <span class="rail__eyebrow">articles</span>
+        {articleNav.map((article) => (
+          <a
+            href={`${base}/articles/${article.slug}/`}
+            class:list={['rail__item', { active: article.slug === activeSlug }]}
+          >
+            <span class="rail__item-index">{article.sequence.toString().padStart(2, '0')}</span>
+            <span class="rail__item-copy">
+              <strong>{article.title}</strong>
+              <small>{article.description}</small>
+            </span>
+          </a>
+        ))}
+      </nav>
+
+      {visibleSections.length > 0 && (
+        <nav class="rail-mobile__group" aria-label="Sections">
+          <span class="rail__eyebrow">inside this article</span>
+          {visibleSections.map((section) => (
             <a
               href={section.slug ? `#${section.slug}` : undefined}
-              class:list={['mni-toc-sub', `depth-${section.depth}`]}
+              class:list={['rail__section-link', `depth-${section.depth}`]}
+              data-section-link={section.slug}
             >
               {section.label}
             </a>
           ))}
-          {sectionNav.some((section) => section.soon) && (
-            <>
-              <div class="mni-toc-sep" />
-              {sectionNav.filter((section) => section.soon).map((section) => (
-                <span class="mni-toc-sub soon">{section.label}</span>
-              ))}
-            </>
-          )}
-        </>
+        </nav>
       )}
-    </>
-  ))}
+    </div>
+  </details>
+</div>
+
+<aside class="rail" data-article-rail>
+  <a href={`${base}/`} class="rail__brand">mni-ml</a>
+
+  <div class="rail__frame">
+    <div class="rail__section">
+      <span class="rail__eyebrow">{railTitle}</span>
+      <nav class="rail__group" aria-label="Articles">
+        {articleNav.map((article) => (
+          <a
+            href={`${base}/articles/${article.slug}/`}
+            class:list={['rail__item', { active: article.slug === activeSlug }]}
+          >
+            <span class="rail__item-index">{article.sequence.toString().padStart(2, '0')}</span>
+            <span class="rail__item-copy">
+              <strong>{article.title}</strong>
+              <small>{article.description}</small>
+            </span>
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    {visibleSections.length > 0 && (
+      <div class="rail__section">
+        <div class="rail__divider" />
+        <span class="rail__eyebrow">inside this article</span>
+        <nav class="rail__group" aria-label="Sections">
+          {visibleSections.map((section) => (
+            <a
+              href={section.slug ? `#${section.slug}` : undefined}
+              class:list={['rail__section-link', `depth-${section.depth}`]}
+              data-section-link={section.slug}
+            >
+              {section.label}
+            </a>
+          ))}
+          {soonSections.map((section) => (
+            <span class="rail__section-link is-soon">{section.label}</span>
+          ))}
+        </nav>
+      </div>
+    )}
+  </div>
 </aside>
 
 <style>
-  .mni-toc {
-    width: 192px;
+  .rail-mobile {
+    display: none;
+  }
+
+  .rail {
+    width: 284px;
     flex-shrink: 0;
-    border-right: 0.5px solid var(--bdr);
-    padding: 24px 0;
+    min-height: 100dvh;
+    padding: 22px 18px;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
   }
 
-  .mni-toc-label {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0 20px 10px;
-  }
-
-  .mni-toc-module {
-    display: flex;
-    gap: 10px;
-    font-size: 12px;
-    padding: 5px 20px;
-    border-left: 2px solid transparent;
-    color: var(--muted);
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  .mni-toc-module:hover {
+  .rail__brand {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 650;
+    letter-spacing: -0.05em;
     color: var(--txt);
     text-decoration: none;
+    margin-bottom: 18px;
   }
 
-  .mni-toc-module.active {
-    color: var(--txt);
-    font-weight: 500;
+  .rail__frame {
+    padding: 18px 16px;
+    border: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 12%, var(--bdr));
+    border-radius: 24px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--article-accent, var(--acc)) 4%, rgba(20, 22, 20, 0.98)), rgba(17, 18, 17, 0.98)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 24%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.03),
+      0 18px 42px rgba(0, 0, 0, 0.24);
   }
 
-  .mni-toc-number {
-    color: var(--muted);
-    min-width: 20px;
+  .rail__section + .rail__section {
+    margin-top: 18px;
   }
 
-  .mni-toc-sub {
+  .rail__eyebrow {
     display: block;
-    font-size: 11px;
-    padding: 4px 20px 4px 30px;
+    margin-bottom: 10px;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 72%, white);
+  }
+
+  .rail__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rail__item {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 11px;
+    border-radius: 14px;
     color: var(--muted);
-    border-left: 2px solid transparent;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .rail__item:hover {
+    color: var(--txt);
+    background: rgba(255, 255, 255, 0.02);
     text-decoration: none;
   }
 
-  .mni-toc-sub.depth-3 {
-    padding-left: 42px;
+  .rail__item.active {
+    color: var(--txt);
+    border-color: color-mix(in srgb, var(--article-accent, var(--acc)) 28%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--article-accent, var(--acc)) 18%, transparent), rgba(255, 255, 255, 0.01));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
-  .mni-toc-sub.soon {
+  .rail__item-index {
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 55%, var(--muted));
+    padding-top: 1px;
+  }
+
+  .rail__item-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .rail__item-copy strong {
+    font-size: 0.92rem;
+    font-weight: 580;
+    line-height: 1.2;
+  }
+
+  .rail__item-copy small {
+    font-size: 0.76rem;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
+  .rail__section-link {
+    display: block;
+    padding: 6px 4px 6px 12px;
+    border-left: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 16%, transparent);
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .rail__section-link:hover,
+  .rail__section-link.is-current {
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 74%, white);
+    border-color: color-mix(in srgb, var(--article-accent, var(--acc)) 60%, transparent);
+    text-decoration: none;
+  }
+
+  .rail__section-link.depth-3 {
+    padding-left: 22px;
+    font-size: 0.78rem;
+  }
+
+  .rail__section-link.is-soon {
     color: var(--soon-txt);
     font-style: italic;
   }
 
-  .mni-toc-sep {
-    height: 0.5px;
-    background: var(--bdr);
-    margin: 12px 20px;
+  .rail__divider {
+    height: 1px;
+    margin: 0 0 16px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--article-accent, var(--acc)) 26%, var(--bdr)), transparent);
   }
 
-  @media (max-width: 768px) {
-    .mni-toc {
+  .rail-mobile__drawer {
+    border: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 18%, var(--bdr));
+    border-radius: 18px;
+    background: rgba(19, 20, 19, 0.98);
+    overflow: hidden;
+  }
+
+  .rail-mobile__summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+  }
+
+  .rail-mobile__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .rail-mobile__eyebrow {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 72%, white);
+  }
+
+  .rail-mobile__title {
+    font-size: 0.96rem;
+    font-weight: 580;
+    color: var(--txt);
+  }
+
+  .rail-mobile__panel {
+    display: grid;
+    gap: 18px;
+    padding: 0 16px 16px;
+  }
+
+  .rail-mobile__group {
+    display: grid;
+    gap: 6px;
+  }
+
+  @media (max-width: 1024px) {
+    .rail {
+      width: 250px;
+      padding-right: 8px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .rail-mobile {
+      display: block;
+      margin-bottom: 22px;
+    }
+
+    .rail {
       display: none;
     }
   }
 </style>
+
+<script>
+  const sectionLinks = Array.from(document.querySelectorAll('[data-section-link]'));
+
+  if (sectionLinks.length > 0) {
+    const sections = Array.from(
+      new Set(
+        sectionLinks
+          .map((link) => link.getAttribute('data-section-link'))
+          .filter(Boolean),
+      ),
+    )
+      .map((slug) => slug && document.getElementById(slug))
+      .filter(Boolean);
+
+    const setCurrent = (slug) => {
+      sectionLinks.forEach((link) => {
+        link.classList.toggle('is-current', link.getAttribute('data-section-link') === slug);
+      });
+    };
+
+    if (sections.length > 0) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+
+          if (visible?.target?.id) {
+            setCurrent(visible.target.id);
+          }
+        },
+        { rootMargin: '-24% 0px -56% 0px', threshold: [0, 0.25, 1] },
+      );
+
+      sections.forEach((section) => observer.observe(section));
+    }
+
+    const syncHash = () => {
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash) setCurrent(hash);
+    };
+
+    syncHash();
+    window.addEventListener('hashchange', syncHash);
+  }
+</script>

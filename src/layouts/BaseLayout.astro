@@ -10,9 +10,12 @@ interface Props {
   type?: 'website' | 'article';
   pubDate?: Date;
   tags?: string[];
+  showHeader?: boolean;
+  bodyClass?: string;
 }
 
 const props = Astro.props;
+const { showHeader = true, bodyClass } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,8 +23,8 @@ const props = Astro.props;
   <head>
     <BaseHead {...props} />
   </head>
-  <body>
-    <Header />
+  <body class={bodyClass}>
+    {showHeader && <Header />}
     <slot />
   </body>
 </html>

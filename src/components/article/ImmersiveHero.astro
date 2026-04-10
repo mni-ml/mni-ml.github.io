@@ -1,0 +1,284 @@
+---
+import type { ArticlePresentation } from '../../lib/articles';
+
+interface Props {
+  title: string;
+  description: string;
+  author: string;
+  tags: string[];
+  sequence: number;
+  pubDate: Date;
+  updatedDate?: Date;
+  presentation?: ArticlePresentation;
+}
+
+const { title, description, author, tags, sequence, pubDate, updatedDate, presentation } = Astro.props;
+const poster = presentation?.poster;
+const chips = poster?.chips?.length ? poster.chips : tags.slice(0, 4);
+const formattedPubDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+const formattedUpdatedDate = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<section class="hero">
+  <div class="hero__copy">
+    <div class="hero__eyebrow">
+      <span>module {sequence.toString().padStart(2, '0')}</span>
+      <span>immersive article</span>
+    </div>
+
+    <h1 class="hero__title">{title}</h1>
+    <p class="hero__lede">{description}</p>
+
+    <div class="hero__meta">
+      <span>By {author}</span>
+      <span>{formattedPubDate}</span>
+      {formattedUpdatedDate && <span>Updated {formattedUpdatedDate}</span>}
+    </div>
+
+    {tags.length > 0 && (
+      <ul class="hero__tags">
+        {tags.map((tag) => (
+          <li>{tag}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+
+  <div class="hero__poster">
+    {poster?.image ? (
+      <img src={poster.image} alt={poster.title ?? `${title} poster`} class="hero__poster-image" />
+    ) : (
+      <div class="hero__poster-card" aria-hidden="true">
+        <div class="hero__poster-glow" />
+        <div class="hero__poster-grid" />
+        <div class="hero__poster-copy">
+          <span class="hero__poster-eyebrow">{poster?.eyebrow ?? 'reference artifact'}</span>
+          <strong>{poster?.title ?? title}</strong>
+          <p>{poster?.summary ?? description}</p>
+        </div>
+        <div class="hero__poster-lines">
+          <span />
+          <span />
+          <span />
+        </div>
+        {chips.length > 0 && (
+          <div class="hero__poster-chips">
+            {chips.map((chip) => (
+              <span>{chip}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    gap: 26px;
+    align-items: stretch;
+    margin-bottom: 28px;
+  }
+
+  .hero__copy {
+    padding: 8px 0 0;
+  }
+
+  .hero__eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 76%, white);
+  }
+
+  .hero__title {
+    margin: 0 0 12px;
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 4vw, 4.6rem);
+    line-height: 0.96;
+    letter-spacing: -0.07em;
+    color: var(--txt);
+    text-wrap: balance;
+  }
+
+  .hero__lede {
+    margin: 0;
+    max-width: 50rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--muted) 84%, white);
+    text-wrap: pretty;
+  }
+
+  .hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-top: 22px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+  }
+
+  .hero__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    margin: 22px 0 0;
+  }
+
+  .hero__tags li {
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 22%, transparent);
+    background: color-mix(in srgb, var(--article-accent, var(--acc)) 10%, rgba(255, 255, 255, 0.01));
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 64%, white);
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+  }
+
+  .hero__poster {
+    min-height: 100%;
+  }
+
+  .hero__poster-card,
+  .hero__poster-image {
+    width: 100%;
+    height: 100%;
+    min-height: 340px;
+    display: block;
+    border-radius: 32px;
+    border: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 18%, var(--bdr));
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(18, 20, 18, 0.95), rgba(10, 11, 10, 0.98)),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 28px 60px rgba(0, 0, 0, 0.32);
+  }
+
+  .hero__poster-image {
+    object-fit: cover;
+  }
+
+  .hero__poster-card {
+    position: relative;
+    padding: 24px;
+  }
+
+  .hero__poster-glow {
+    position: absolute;
+    inset: 12% 10% auto auto;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--article-accent, var(--acc)) 22%, transparent);
+    filter: blur(18px);
+    opacity: 0.9;
+  }
+
+  .hero__poster-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(transparent 95%, rgba(255, 255, 255, 0.025) 100%),
+      linear-gradient(90deg, transparent 95%, rgba(255, 255, 255, 0.025) 100%);
+    background-size: 100% 24px, 24px 100%;
+    opacity: 0.25;
+  }
+
+  .hero__poster-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 22rem;
+    display: grid;
+    gap: 10px;
+  }
+
+  .hero__poster-eyebrow {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 76%, white);
+  }
+
+  .hero__poster-copy strong {
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    font-family: var(--font-display);
+  }
+
+  .hero__poster-copy p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--muted) 82%, white);
+  }
+
+  .hero__poster-lines {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 80px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .hero__poster-lines span {
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--article-accent, var(--acc)) 44%, transparent), transparent);
+  }
+
+  .hero__poster-chips {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    z-index: 1;
+  }
+
+  .hero__poster-chips span {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 22%, transparent);
+    background: rgba(10, 12, 10, 0.66);
+    font-size: 0.74rem;
+    font-family: var(--font-mono);
+    color: var(--txt);
+  }
+
+  @media (max-width: 960px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+
+    .hero__poster-card,
+    .hero__poster-image {
+      min-height: 280px;
+    }
+  }
+</style>

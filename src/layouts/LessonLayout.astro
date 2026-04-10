@@ -1,8 +1,9 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import ArticleVisual from '../components/ArticleVisual.astro';
 import Sidebar from '../components/Sidebar.astro';
 import type { ArticleNavItem, ArticlePresentation, ArticleRailSection } from '../lib/articles';
+import ArtifactPanel from '../components/article/ArtifactPanel.astro';
+import ImmersiveHero from '../components/article/ImmersiveHero.astro';
 import '../styles/article.css';
 
 interface Props {
@@ -39,6 +40,19 @@ const {
   presentation,
 } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const accent = presentation?.accent ?? 'var(--acc)';
+const activeSections = sectionNav.filter((section) => !section.soon);
+const formattedPubDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+const formattedUpdatedDate = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+const shellStyle = `--article-accent: ${accent};`;
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -58,62 +72,124 @@ const jsonLd = {
   type="article"
   pubDate={pubDate}
   tags={tags}
+  showHeader={false}
+  bodyClass="immersive-body"
 >
-  <div class="mni-layout">
+  <div class="lesson-shell" style={shellStyle}>
     <Sidebar
       activeSlug={slug}
       articleNav={articleNav}
       sectionNav={sectionNav}
-      railTitle={presentation?.railTitle}
+      railTitle={presentation?.railTitle ?? 'field guide'}
     />
-    <main class="mni-content">
-      <div class="lesson-eyebrow">module {sequence}</div>
-      <h1 class="lesson-title">{title}</h1>
-      <div class="lesson-meta">{description}</div>
-      <ArticleVisual />
+    <main class="lesson-stage">
+      <div class="lesson-stage__inner">
+        <ImmersiveHero
+          title={title}
+          description={description}
+          author={author}
+          tags={tags}
+          sequence={sequence}
+          pubDate={pubDate}
+          updatedDate={updatedDate}
+          presentation={presentation}
+        />
 
-      <div class="prose">
-        <slot />
+        <div class="lesson-columns">
+          <div class="lesson-column lesson-column--main">
+            <ArtifactPanel eyebrow="Field notes" title="Article">
+              <div class="prose">
+                <slot />
+              </div>
+            </ArtifactPanel>
+
+            <nav class="lesson-pager">
+              {prevArticle ? (
+                <a href={`${base}/articles/${prevArticle.slug}/`} class="lesson-btn">
+                  &larr; {prevArticle.title}
+                </a>
+              ) : (
+                <span class="lesson-btn disabled">Start of sequence</span>
+              )}
+              {nextArticle ? (
+                <a href={`${base}/articles/${nextArticle.slug}/`} class="lesson-btn">
+                  {nextArticle.title} &rarr;
+                </a>
+              ) : (
+                <span class="lesson-btn disabled">Next &rarr;</span>
+              )}
+            </nav>
+          </div>
+
+          <aside class="lesson-column lesson-column--side">
+            <ArtifactPanel eyebrow="Orientation" title="This article" tone="accent">
+              <dl class="lesson-meta-list">
+                <div>
+                  <dt>Module</dt>
+                  <dd>{sequence.toString().padStart(2, '0')}</dd>
+                </div>
+                <div>
+                  <dt>Published</dt>
+                  <dd>{formattedPubDate}</dd>
+                </div>
+                {formattedUpdatedDate && (
+                  <div>
+                    <dt>Updated</dt>
+                    <dd>{formattedUpdatedDate}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt>Sections</dt>
+                  <dd>{activeSections.length}</dd>
+                </div>
+              </dl>
+
+              {tags.length > 0 && (
+                <ul class="lesson-tag-list">
+                  {tags.map((tag) => (
+                    <li>{tag}</li>
+                  ))}
+                </ul>
+              )}
+            </ArtifactPanel>
+
+            {activeSections.length > 0 && (
+              <ArtifactPanel eyebrow="Inside this article" title="Section map">
+                <nav class="lesson-anchor-list" aria-label="Section map">
+                  {activeSections.map((section) => (
+                    <a href={section.slug ? `#${section.slug}` : undefined}>
+                      {section.label}
+                    </a>
+                  ))}
+                </nav>
+              </ArtifactPanel>
+            )}
+
+            <ArtifactPanel eyebrow="Continue" title="Next steps">
+              <div class="lesson-nav-card">
+                {prevArticle ? (
+                  <a href={`${base}/articles/${prevArticle.slug}/`} class="lesson-nav-card__link">
+                    Previous
+                    <span>{prevArticle.title}</span>
+                  </a>
+                ) : (
+                  <span class="lesson-nav-card__empty">You are at the start of the sequence</span>
+                )}
+                {nextArticle ? (
+                  <a href={`${base}/articles/${nextArticle.slug}/`} class="lesson-nav-card__link">
+                    Up next
+                    <span>{nextArticle.title}</span>
+                  </a>
+                ) : (
+                  <span class="lesson-nav-card__empty">You have reached the current end</span>
+                )}
+              </div>
+            </ArtifactPanel>
+          </aside>
+        </div>
       </div>
-
-      <nav class="lesson-pager">
-        {prevArticle ? (
-          <a href={`${base}/articles/${prevArticle.slug}/`} class="lesson-btn">
-            &larr; {prevArticle.title}
-          </a>
-        ) : (
-          <span />
-        )}
-        {nextArticle ? (
-          <a href={`${base}/articles/${nextArticle.slug}/`} class="lesson-btn">
-            {nextArticle.title} &rarr;
-          </a>
-        ) : (
-          <span class="lesson-btn disabled">Next &rarr;</span>
-        )}
-      </nav>
     </main>
   </div>
 
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 </BaseLayout>
-
-<style>
-  .mni-layout {
-    display: flex;
-    min-height: calc(100dvh - 44px);
-  }
-
-  .mni-content {
-    flex: 1;
-    padding: 36px 48px;
-    overflow: hidden;
-    max-width: var(--content-width);
-  }
-
-  @media (max-width: 768px) {
-    .mni-content {
-      padding: 24px 16px;
-    }
-  }
-</style>

@@ -1,0 +1,89 @@
+---
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  tone?: 'default' | 'accent';
+  panelClass?: string;
+}
+
+const { eyebrow, title, tone = 'default', panelClass } = Astro.props;
+---
+
+<section class:list={['artifact-panel', `tone-${tone}`, panelClass]}>
+  {(eyebrow || title) && (
+    <header class="artifact-panel__header">
+      {eyebrow && <span class="artifact-panel__eyebrow">{eyebrow}</span>}
+      {title && <h2 class="artifact-panel__title">{title}</h2>}
+    </header>
+  )}
+
+  <div class="artifact-panel__body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .artifact-panel {
+    position: relative;
+    border-radius: 28px;
+    padding: 20px;
+    border: 1px solid color-mix(in srgb, var(--article-accent, var(--acc)) 10%, var(--bdr));
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--article-accent, var(--acc)) 8%, transparent), transparent 36%),
+      linear-gradient(180deg, rgba(25, 27, 24, 0.96), rgba(15, 16, 15, 0.98));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 20px 44px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+  }
+
+  .artifact-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(transparent 96%, rgba(255, 255, 255, 0.02) 100%),
+      linear-gradient(90deg, transparent 96%, rgba(255, 255, 255, 0.02) 100%);
+    background-size: 100% 20px, 20px 100%;
+    opacity: 0.16;
+    pointer-events: none;
+  }
+
+  .artifact-panel.tone-accent {
+    border-color: color-mix(in srgb, var(--article-accent, var(--acc)) 24%, transparent);
+    background:
+      radial-gradient(circle at top right, color-mix(in srgb, var(--article-accent, var(--acc)) 18%, transparent), transparent 36%),
+      linear-gradient(180deg, color-mix(in srgb, var(--article-accent, var(--acc)) 10%, rgba(24, 27, 23, 0.98)), rgba(14, 15, 14, 0.99));
+  }
+
+  .artifact-panel__header {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .artifact-panel__eyebrow {
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--article-accent, var(--acc)) 72%, white);
+  }
+
+  .artifact-panel__title {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--txt);
+  }
+
+  .artifact-panel__body {
+    position: relative;
+    z-index: 1;
+  }
+</style>
