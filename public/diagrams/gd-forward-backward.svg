@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 180" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace; }
+    .node { font-size: 11px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .op { font-size: 9px; fill: #6b839e; }
+    .heading { font-size: 9px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .line { stroke: #38bdf8; stroke-width: 1.2; fill: none; marker-end: url(#a); }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 6 2.5, 0 5" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Forward -->
+  <text class="heading" x="20" y="18">FORWARD</text>
+
+  <rect class="box" x="20" y="30" width="48" height="36" />
+  <text class="node" x="44" y="52" text-anchor="middle">x</text>
+
+  <line class="line" x1="70" y1="48" x2="108" y2="48" />
+  <text class="op" x="89" y="42" text-anchor="middle">ln</text>
+
+  <rect class="box" x="110" y="30" width="68" height="36" />
+  <text class="node" x="144" y="52" text-anchor="middle">ln x</text>
+
+  <line class="line" x1="180" y1="48" x2="218" y2="48" />
+  <text class="op" x="199" y="42" text-anchor="middle">&#xB2;</text>
+
+  <rect class="box" x="220" y="30" width="84" height="36" />
+  <text class="node" x="262" y="52" text-anchor="middle">(ln x)&#xB2;</text>
+
+  <line class="line" x1="306" y1="48" x2="344" y2="48" />
+
+  <rect class="box" x="346" y="30" width="48" height="36" />
+  <text class="node" x="370" y="52" text-anchor="middle">y</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="20" y1="90" x2="500" y2="90" />
+
+  <!-- Backward -->
+  <text class="heading" x="20" y="112">BACKWARD</text>
+
+  <rect class="box" x="346" y="124" width="48" height="36" />
+  <text class="node" x="370" y="141" text-anchor="middle">1</text>
+  <text class="sub" x="370" y="154" text-anchor="middle">dy/dy</text>
+
+  <line class="line" x1="344" y1="142" x2="306" y2="142" />
+  <text class="op" x="325" y="135" text-anchor="middle">&#xD7; 2ln x</text>
+
+  <rect class="box" x="220" y="124" width="84" height="36" />
+  <text class="node" x="262" y="141" text-anchor="middle">2 ln x</text>
+  <text class="sub" x="262" y="154" text-anchor="middle">dy/d(ln x)</text>
+
+  <line class="line" x1="218" y1="142" x2="180" y2="142" />
+  <text class="op" x="199" y="135" text-anchor="middle">&#xD7; 1/x</text>
+
+  <rect class="box" x="110" y="124" width="68" height="36" />
+  <text class="node" x="144" y="141" text-anchor="middle">2ln x/x</text>
+  <text class="sub" x="144" y="154" text-anchor="middle">dy/dx</text>
+</svg>

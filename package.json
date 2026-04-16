@@ -20,7 +20,6 @@
     "@astrojs/sitemap": "^3.7.1",
     "astro": "^6.0.4",
     "katex": "^0.16.38",
-    "mermaid": "^11.14.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "rehype-katex": "^7.0.1",

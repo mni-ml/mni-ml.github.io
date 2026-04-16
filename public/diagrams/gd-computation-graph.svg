@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 64" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace; }
+    .node { font-size: 12px; fill: #dde4ed; }
+    .op { font-size: 9px; fill: #6b839e; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 6; }
+    .line { stroke: #38bdf8; stroke-width: 1.2; fill: none; marker-end: url(#a); }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 6 2.5, 0 5" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <rect class="box" x="12" y="12" width="56" height="40" />
+  <text class="node" x="40" y="37" text-anchor="middle">x</text>
+
+  <line class="line" x1="70" y1="32" x2="116" y2="32" />
+  <text class="op" x="93" y="26" text-anchor="middle">ln</text>
+
+  <rect class="box" x="118" y="12" width="72" height="40" />
+  <text class="node" x="154" y="37" text-anchor="middle">ln x</text>
+
+  <line class="line" x1="192" y1="32" x2="238" y2="32" />
+  <text class="op" x="215" y="26" text-anchor="middle">&#xB2;</text>
+
+  <rect class="box" x="240" y="12" width="90" height="40" />
+  <text class="node" x="285" y="37" text-anchor="middle">(ln x)&#xB2;</text>
+
+  <line class="line" x1="332" y1="32" x2="368" y2="32" />
+
+  <rect class="box" x="370" y="12" width="56" height="40" />
+  <text class="node" x="398" y="37" text-anchor="middle">y</text>
+</svg>

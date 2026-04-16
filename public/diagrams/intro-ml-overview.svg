@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 80" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace; }
+    .node { font-size: 11px; fill: #dde4ed; }
+    .dim { font-size: 9px; fill: #6b839e; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 6; }
+    .line { stroke: #38bdf8; stroke-width: 1.2; fill: none; marker-end: url(#a); }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 6 2.5, 0 5" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <rect class="box" x="16" y="20" width="80" height="40" />
+  <text class="node" x="56" y="38" text-anchor="middle">input</text>
+  <text class="dim" x="56" y="50" text-anchor="middle">data</text>
+
+  <line class="line" x1="98" y1="40" x2="148" y2="40" />
+
+  <rect class="box" x="150" y="20" width="80" height="40" />
+  <text class="node" x="190" y="38" text-anchor="middle">f(x)</text>
+  <text class="dim" x="190" y="50" text-anchor="middle">model</text>
+
+  <line class="line" x1="232" y1="40" x2="282" y2="40" />
+
+  <rect class="box" x="284" y="20" width="80" height="40" />
+  <text class="node" x="324" y="38" text-anchor="middle">output</text>
+  <text class="dim" x="324" y="50" text-anchor="middle">prediction</text>
+
+  <line class="line" x1="366" y1="40" x2="396" y2="40" />
+  <text class="dim" x="390" y="32">compare</text>
+
+  <path class="line" d="M 396 40 Q 420 40 420 56 Q 420 72 240 72 Q 150 72 150 62" />
+  <text class="dim" x="240" y="68" text-anchor="middle">adjust</text>
+</svg>
