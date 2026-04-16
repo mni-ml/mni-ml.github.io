@@ -1,6 +1,5 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import ArticleVisual from '../components/ArticleVisual.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getPrevNextArticle } from '../lib/articles';
 import '../styles/article.css';
@@ -57,7 +56,6 @@ const jsonLd = {
       <div class="lesson-eyebrow">module {order}</div>
       <h1 class="lesson-title">{title}</h1>
       <div class="lesson-meta">{description}</div>
-      <ArticleVisual />
 
       <div class="prose">
         <slot />
@@ -83,6 +81,81 @@ const jsonLd = {
   </div>
 
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <script>
+    import mermaid from 'mermaid';
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        darkMode: true,
+        background: '#0d1117',
+        fontFamily: "'IBM Plex Mono', 'SF Mono', 'Fira Code', monospace",
+        fontSize: '12px',
+
+        primaryColor: '#131923',
+        primaryTextColor: '#dde4ed',
+        primaryBorderColor: '#1a2535',
+
+        secondaryColor: '#131923',
+        secondaryTextColor: '#6b839e',
+        secondaryBorderColor: '#1a2535',
+
+        tertiaryColor: '#131923',
+        tertiaryTextColor: '#6b839e',
+        tertiaryBorderColor: '#1a2535',
+
+        lineColor: '#38bdf8',
+        textColor: '#dde4ed',
+
+        mainBkg: '#131923',
+        nodeBorder: '#1a2535',
+        nodeTextColor: '#dde4ed',
+
+        clusterBkg: 'rgba(56, 189, 248, 0.04)',
+        clusterBorder: '#1a2535',
+        titleColor: '#6b839e',
+
+        edgeLabelBackground: '#0d1117',
+        noteBkgColor: '#131923',
+        noteTextColor: '#dde4ed',
+        noteBorderColor: '#1a2535',
+
+        actorBkg: '#131923',
+        actorBorder: '#1a2535',
+        actorTextColor: '#dde4ed',
+        actorLineColor: '#38bdf8',
+        signalColor: '#38bdf8',
+        signalTextColor: '#dde4ed',
+        labelBoxBkgColor: '#131923',
+        labelBoxBorderColor: '#1a2535',
+        labelTextColor: '#dde4ed',
+        loopTextColor: '#6b839e',
+        activationBkgColor: '#131923',
+        activationBorderColor: '#38bdf8',
+        sequenceNumberColor: '#0d1117',
+      },
+    });
+
+    async function renderMermaid() {
+      const blocks = document.querySelectorAll('pre > code.language-mermaid');
+      for (const block of blocks) {
+        const pre = block.parentElement!;
+        const code = block.textContent ?? '';
+        const container = document.createElement('div');
+        container.classList.add('mermaid-diagram');
+        const { svg } = await mermaid.render(
+          `mermaid-${Math.random().toString(36).slice(2, 8)}`,
+          code,
+        );
+        container.innerHTML = svg;
+        pre.replaceWith(container);
+      }
+    }
+
+    renderMermaid();
+  </script>
 </BaseLayout>
 
 <style>
