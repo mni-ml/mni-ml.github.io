@@ -15,7 +15,7 @@ const activeModule = curriculum.find((m) => m.slug === activeSlug);
   {curriculum.map((mod) => (
     <>
       <a
-        href={`${base}/articles/${mod.slug}/`}
+        href={`${base}articles/${mod.slug}/`}
         class:list={['mni-toc-module', { active: mod.slug === activeSlug }]}
       >
         {mod.title}

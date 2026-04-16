@@ -25,7 +25,7 @@ const base = import.meta.env.BASE_URL;
         {curriculum.map((mod) => {
           const article = articlesBySlug.get(mod.slug);
           return (
-            <a href={`${base}/articles/${mod.slug}/`} class="module-card">
+            <a href={`${base}articles/${mod.slug}/`} class="module-card">
               <span class="module-order">{mod.order}</span>
               <div>
                 <div class="module-title">{mod.title}</div>

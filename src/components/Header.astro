@@ -1,14 +1,14 @@
 ---
 const base = import.meta.env.BASE_URL;
 const navLinks = [
-  { href: `${base}/`, label: 'home' },
+  { href: base, label: 'home' },
   { href: 'https://github.com/mni-ml/framework', label: 'repo' },
 ];
 ---
 
 <header class="mni-nav">
-  <a href={`${base}/`} class="mni-brand">
-    <img src={`${base}/mni-ml-logo.svg`} alt="mni-ml logo" width="22" height="22" />
+  <a href={base} class="mni-brand">
+    <img src={`${base}mni-ml-logo.svg`} alt="mni-ml logo" width="22" height="22" />
     mni-ml
   </a>
   <nav class="mni-nav-links">
