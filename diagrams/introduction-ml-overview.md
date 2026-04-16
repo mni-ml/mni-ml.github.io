@@ -4,16 +4,16 @@ Place this in Notion as a code block with language set to `mermaid`.
 Insert after the first paragraph ("...correct outputs that we did not previously have.").
 
 ```mermaid
-graph LR
-    subgraph training ["Training (calibrating the function)"]
-        direction TB
-        Data["Input-Output Pairs"] --> Model["Mathematical Function<br/>(with adjustable parameters)"]
+graph TD
+    subgraph training ["Training"]
+        Data["Input-Output Pairs"] --> Model["Model"]
         Model --> Predicted["Predicted Output"]
-        Predicted --> Compare["Compare to<br/>Expected Output"]
-        Compare -->|"Adjust parameters"| Model
+        Expected["Expected Output"] --> Compare["Compare"]
+        Predicted --> Compare
+        Compare -->|"adjust weights"| Model
     end
 
-    training --> Trained["Trained Model"]
+    Model -.->|"calibrated"| Trained["Trained Model"]
     NewInput["New Input"] --> Trained
-    Trained --> NewOutput["Correct Output<br/>(never seen before)"]
+    Trained --> NewOutput["Correct Output"]
 ```

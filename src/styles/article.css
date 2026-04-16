@@ -143,7 +143,7 @@
 /* Mermaid diagrams */
 .mermaid-diagram {
   margin: 16px 0;
-  padding: 20px 16px;
+  padding: 24px;
   background: var(--bg);
   border: 0.5px solid var(--bdr);
   border-radius: 6px;
@@ -152,8 +152,9 @@
 }
 
 .mermaid-diagram svg {
-  max-width: 100%;
+  width: 100%;
   height: auto;
+  min-width: 500px;
 }
 
 .mermaid-diagram .node rect,
@@ -164,16 +165,8 @@
   stroke-width: 1px;
 }
 
-.mermaid-diagram .node .label {
-  color: var(--txt) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 11px !important;
-}
-
 .mermaid-diagram .edgeLabel {
   background-color: var(--bg) !important;
-  color: var(--muted) !important;
-  font-size: 10px !important;
 }
 
 .mermaid-diagram .edgePath .path {
@@ -192,22 +185,21 @@
   ry: 6;
 }
 
-.mermaid-diagram .cluster .nodeLabel,
-.mermaid-diagram .cluster-label .nodeLabel {
-  color: var(--muted) !important;
-  font-size: 10px !important;
-  font-family: var(--font-mono) !important;
-}
-
 .mermaid-diagram text {
   fill: var(--txt) !important;
-  font-family: var(--font-mono) !important;
+}
+
+.mermaid-diagram .edgeLabel text {
+  fill: var(--muted) !important;
+}
+
+.mermaid-diagram .cluster-label .nodeLabel {
+  color: var(--muted) !important;
 }
 
 .mermaid-diagram .messageText,
 .mermaid-diagram .loopText tspan {
   fill: var(--muted) !important;
-  font-size: 11px !important;
 }
 
 .mermaid-diagram .activation {
@@ -226,7 +218,6 @@
 
 .mermaid-diagram .note text {
   fill: var(--txt) !important;
-  font-size: 10px !important;
 }
 
 /* Links in prose */
