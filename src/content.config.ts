@@ -1,5 +1,4 @@
 import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
 import { notionLoader } from './lib/notion/loader';
 
 const schema = z.object({
@@ -16,14 +15,9 @@ const schema = z.object({
   tstorchBundles: z.array(z.string()).default([]),
 });
 
-const localArticles = defineCollection({
-  loader: glob({ pattern: '**/index.mdx', base: './src/content/articles' }),
-  schema,
-});
-
 const notionArticles = defineCollection({
   loader: notionLoader(),
   schema,
 });
 
-export const collections = { localArticles, notionArticles };
+export const collections = { notionArticles };
