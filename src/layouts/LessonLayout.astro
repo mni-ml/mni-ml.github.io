@@ -139,10 +139,9 @@ const jsonLd = {
     });
 
     async function renderMermaid() {
-      const blocks = document.querySelectorAll('pre > code.language-mermaid');
-      for (const block of blocks) {
-        const pre = block.parentElement!;
-        const code = block.textContent ?? '';
+      const blocks = document.querySelectorAll('pre[data-language="mermaid"]');
+      for (const pre of blocks) {
+        const code = pre.textContent ?? '';
         const container = document.createElement('div');
         container.classList.add('mermaid-diagram');
         const { svg } = await mermaid.render(
