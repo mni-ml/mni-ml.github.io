@@ -2,7 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import ArticleVisual from '../components/ArticleVisual.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { getPrevNext } from '../lib/curriculum';
+import { getPrevNextArticle } from '../lib/articles';
 import '../styles/article.css';
 
 interface Props {
@@ -29,7 +29,7 @@ const {
   order,
 } = Astro.props;
 
-const { prev, next } = getPrevNext(slug);
+const { prev, next } = await getPrevNextArticle(slug);
 const base = import.meta.env.BASE_URL;
 
 const jsonLd = {
@@ -65,15 +65,15 @@ const jsonLd = {
 
       <nav class="lesson-pager">
         {prev ? (
-          <a href={`${base}articles/${prev.slug}/`} class="lesson-btn">
-            &larr; {prev.title}
+          <a href={`${base}articles/${prev.id}/`} class="lesson-btn">
+            &larr; {prev.data.title}
           </a>
         ) : (
           <span />
         )}
         {next ? (
-          <a href={`${base}articles/${next.slug}/`} class="lesson-btn">
-            {next.title} &rarr;
+          <a href={`${base}articles/${next.id}/`} class="lesson-btn">
+            {next.data.title} &rarr;
           </a>
         ) : (
           <span class="lesson-btn disabled">Next &rarr;</span>

@@ -1,11 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { curriculum } from '../lib/curriculum';
 import { getAllArticles } from '../lib/articles';
 
 const articles = await getAllArticles();
-const articlesBySlug = new Map(articles.map((a) => [a.id, a]));
 const base = import.meta.env.BASE_URL;
 ---
 
@@ -22,20 +20,15 @@ const base = import.meta.env.BASE_URL;
       </p>
 
       <div class="modules">
-        {curriculum.map((mod) => {
-          const article = articlesBySlug.get(mod.slug);
-          return (
-            <a href={`${base}articles/${mod.slug}/`} class="module-card">
-              <span class="module-order">{mod.order}</span>
-              <div>
-                <div class="module-title">{mod.title}</div>
-                {article && (
-                  <div class="module-desc">{article.data.description}</div>
-                )}
-              </div>
-            </a>
-          );
-        })}
+        {articles.map((article) => (
+          <a href={`${base}articles/${article.id}/`} class="module-card">
+            <span class="module-order">{article.data.order}</span>
+            <div>
+              <div class="module-title">{article.data.title}</div>
+              <div class="module-desc">{article.data.description}</div>
+            </div>
+          </a>
+        ))}
       </div>
     </main>
   </div>

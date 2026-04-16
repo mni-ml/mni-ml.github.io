@@ -1,5 +1,5 @@
 ---
-import { curriculum, type Module } from '../lib/curriculum';
+import { getAllArticles } from '../lib/articles';
 
 interface Props {
   activeSlug?: string;
@@ -7,35 +7,18 @@ interface Props {
 
 const { activeSlug } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const activeModule = curriculum.find((m) => m.slug === activeSlug);
+const articles = await getAllArticles();
 ---
 
 <aside class="mni-toc">
   <div class="mni-toc-label">curriculum</div>
-  {curriculum.map((mod) => (
-    <>
-      <a
-        href={`${base}articles/${mod.slug}/`}
-        class:list={['mni-toc-module', { active: mod.slug === activeSlug }]}
-      >
-        {mod.title}
-      </a>
-      {mod.slug === activeSlug && mod.subSections && (
-        <>
-          {mod.subSections.filter((s) => !s.soon).map((sub) => (
-            <div class="mni-toc-sub">{sub.title}</div>
-          ))}
-          {mod.subSections.some((s) => s.soon) && (
-            <>
-              <div class="mni-toc-sep" />
-              {mod.subSections.filter((s) => s.soon).map((sub) => (
-                <div class="mni-toc-sub soon">{sub.title}</div>
-              ))}
-            </>
-          )}
-        </>
-      )}
-    </>
+  {articles.map((article) => (
+    <a
+      href={`${base}articles/${article.id}/`}
+      class:list={['mni-toc-module', { active: article.id === activeSlug }]}
+    >
+      {article.data.title}
+    </a>
   ))}
 </aside>
 
