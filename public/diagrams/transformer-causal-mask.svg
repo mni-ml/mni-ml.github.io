@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 280" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .tok { font-size: 9px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.05em; }
+  </style>
+
+  <!-- Token labels (columns) -->
+  <text class="tok" x="100" y="40" text-anchor="middle">t1</text>
+  <text class="tok" x="148" y="40" text-anchor="middle">t2</text>
+  <text class="tok" x="196" y="40" text-anchor="middle">t3</text>
+  <text class="tok" x="244" y="40" text-anchor="middle">t4</text>
+  <text class="tok" x="292" y="40" text-anchor="middle">t5</text>
+
+  <!-- Token labels (rows) -->
+  <text class="tok" x="62" y="72" text-anchor="end">t1</text>
+  <text class="tok" x="62" y="120" text-anchor="end">t2</text>
+  <text class="tok" x="62" y="168" text-anchor="end">t3</text>
+  <text class="tok" x="62" y="216" text-anchor="end">t4</text>
+  <text class="tok" x="62" y="264" text-anchor="end">t5</text>
+
+  <!-- Row 1: t1 can see t1 -->
+  <rect x="76" y="52" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.5"/>
+  <rect x="124" y="52" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+  <rect x="172" y="52" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+  <rect x="220" y="52" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+  <rect x="268" y="52" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+
+  <!-- Row 2: t2 can see t1, t2 -->
+  <rect x="76" y="100" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.3"/>
+  <rect x="124" y="100" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.5"/>
+  <rect x="172" y="100" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+  <rect x="220" y="100" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+  <rect x="268" y="100" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+
+  <!-- Row 3: t3 can see t1, t2, t3 -->
+  <rect x="76" y="148" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.2"/>
+  <rect x="124" y="148" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.3"/>
+  <rect x="172" y="148" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.5"/>
+  <rect x="220" y="148" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+  <rect x="268" y="148" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+
+  <!-- Row 4: t4 can see t1-t4 -->
+  <rect x="76" y="196" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.15"/>
+  <rect x="124" y="196" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.2"/>
+  <rect x="172" y="196" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.3"/>
+  <rect x="220" y="196" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.5"/>
+  <rect x="268" y="196" width="48" height="40" rx="3" fill="#131923" stroke="#1a2535" stroke-width="0.5"/>
+
+  <!-- Row 5: t5 can see all -->
+  <rect x="76" y="244" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.1"/>
+  <rect x="124" y="244" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.15"/>
+  <rect x="172" y="244" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.2"/>
+  <rect x="220" y="244" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.3"/>
+  <rect x="268" y="244" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.5"/>
+</svg>

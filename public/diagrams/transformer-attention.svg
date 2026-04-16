@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 300" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .tok { font-size: 9px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.05em; }
+  </style>
+
+  <!-- Token labels (columns - keys) -->
+  <text class="tok" x="120" y="44" text-anchor="middle">I'm</text>
+  <text class="tok" x="168" y="44" text-anchor="middle">building</text>
+  <text class="tok" x="216" y="44" text-anchor="middle">a</text>
+  <text class="tok" x="264" y="44" text-anchor="middle">minimal</text>
+  <text class="tok" x="312" y="44" text-anchor="middle">ML</text>
+
+  <!-- Token labels (rows - queries) -->
+  <text class="tok" x="80" y="76" text-anchor="end">I'm</text>
+  <text class="tok" x="80" y="124" text-anchor="end">building</text>
+  <text class="tok" x="80" y="172" text-anchor="end">a</text>
+  <text class="tok" x="80" y="220" text-anchor="end">minimal</text>
+  <text class="tok" x="80" y="268" text-anchor="end">ML</text>
+
+  <!-- Axis labels -->
+  <text class="heading" x="216" y="24" text-anchor="middle">KEYS</text>
+  <text class="heading" x="36" y="172" text-anchor="middle" transform="rotate(-90 36 172)">QUERIES</text>
+
+  <!-- Row 1: I'm attending to... -->
+  <rect x="96" y="56" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.7"/>
+  <rect x="144" y="56" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.1"/>
+  <rect x="192" y="56" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.05"/>
+  <rect x="240" y="56" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.08"/>
+  <rect x="288" y="56" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.07"/>
+
+  <!-- Row 2: building attending to... -->
+  <rect x="96" y="104" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.15"/>
+  <rect x="144" y="104" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.55"/>
+  <rect x="192" y="104" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.05"/>
+  <rect x="240" y="104" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.12"/>
+  <rect x="288" y="104" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.13"/>
+
+  <!-- Row 3: a attending to... -->
+  <rect x="96" y="152" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.05"/>
+  <rect x="144" y="152" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.3"/>
+  <rect x="192" y="152" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.4"/>
+  <rect x="240" y="152" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.15"/>
+  <rect x="288" y="152" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.1"/>
+
+  <!-- Row 4: minimal attending to... -->
+  <rect x="96" y="200" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.08"/>
+  <rect x="144" y="200" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.12"/>
+  <rect x="192" y="200" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.1"/>
+  <rect x="240" y="200" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.5"/>
+  <rect x="288" y="200" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.2"/>
+
+  <!-- Row 5: ML attending to... -->
+  <rect x="96" y="248" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.06"/>
+  <rect x="144" y="248" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.15"/>
+  <rect x="192" y="248" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.08"/>
+  <rect x="240" y="248" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.25"/>
+  <rect x="288" y="248" width="48" height="40" rx="3" fill="#38bdf8" opacity="0.6"/>
+</svg>

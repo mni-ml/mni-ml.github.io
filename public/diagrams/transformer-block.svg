@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 0 320 380" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .line { stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a); }
+    .skip { stroke: #38bdf8; stroke-width: 0.8; fill: none; stroke-dasharray: 3 2; stroke-opacity: 0.3; }
+    .bracket { font-size: 8px; fill: #6b839e; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 5 2, 0 4" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Input -->
+  <text class="sub" x="140" y="16" text-anchor="middle">tokens + position</text>
+  <line class="line" x1="140" y1="22" x2="140" y2="42" />
+
+  <!-- Multi-Head Attention -->
+  <rect class="box" x="40" y="44" width="200" height="36" />
+  <text class="label" x="140" y="67" text-anchor="middle">Multi-Head Attention</text>
+
+  <!-- Skip connection 1 -->
+  <path class="skip" d="M 40 52 Q 28 52 28 82 Q 28 110 40 110" />
+  <text class="bracket" x="6" y="84" text-anchor="middle">residual</text>
+
+  <line class="line" x1="140" y1="80" x2="140" y2="98" />
+
+  <!-- Add & Norm 1 -->
+  <rect class="box" x="40" y="100" width="200" height="30" />
+  <text class="sub" x="140" y="119" text-anchor="middle">Add &amp; Normalize</text>
+
+  <line class="line" x1="140" y1="130" x2="140" y2="152" />
+
+  <!-- FFN -->
+  <rect class="box" x="40" y="154" width="200" height="36" />
+  <text class="label" x="140" y="177" text-anchor="middle">Feed-Forward</text>
+
+  <!-- Skip connection 2 -->
+  <path class="skip" d="M 40 162 Q 28 162 28 192 Q 28 220 40 220" />
+  <text class="bracket" x="6" y="194" text-anchor="middle">residual</text>
+
+  <line class="line" x1="140" y1="190" x2="140" y2="208" />
+
+  <!-- Add & Norm 2 -->
+  <rect class="box" x="40" y="210" width="200" height="30" />
+  <text class="sub" x="140" y="229" text-anchor="middle">Add &amp; Normalize</text>
+
+  <!-- Repeat bracket -->
+  <line x1="252" y1="44" x2="260" y2="44" stroke="#1a2535" stroke-width="0.8"/>
+  <line x1="260" y1="44" x2="260" y2="240" stroke="#1a2535" stroke-width="0.8"/>
+  <line x1="252" y1="240" x2="260" y2="240" stroke="#1a2535" stroke-width="0.8"/>
+  <text class="bracket" x="266" y="146">xN</text>
+
+  <line class="line" x1="140" y1="240" x2="140" y2="262" />
+
+  <!-- Output -->
+  <rect class="box" x="40" y="264" width="200" height="36" />
+  <text class="label" x="140" y="287" text-anchor="middle">Linear + Softmax</text>
+
+  <line class="line" x1="140" y1="300" x2="140" y2="322" />
+
+  <text class="sub" x="140" y="336" text-anchor="middle">next token probabilities</text>
+</svg>
