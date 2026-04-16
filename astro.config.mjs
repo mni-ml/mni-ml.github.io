@@ -9,7 +9,7 @@ import rehypeKatex from 'rehype-katex';
 
 export default defineConfig({
   site: 'https://mni-ml.github.io',
-  base: '/blog',
+  base: '/',
   output: 'static',
   integrations: [
     mdx(),
