@@ -6,9 +6,9 @@ import {
 } from '../../lib/inference/model';
 
 const MODEL_URL =
-  'https://media.githubusercontent.com/media/mni-ml/transformer/experimenting/out/model-final.json';
+  'https://media.githubusercontent.com/media/mni-ml/transformer/main/out/model-final.json';
 const TOKENIZER_URL =
-  'https://raw.githubusercontent.com/mni-ml/transformer/experimenting/out/tokenizer.json';
+  'https://raw.githubusercontent.com/mni-ml/transformer/main/out/tokenizer.json';
 
 const INITIAL_PROMPT = 'There once was';
 const TOP_K = 9;
