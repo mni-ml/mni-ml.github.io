@@ -13,7 +13,7 @@ export default defineConfig({
   output: 'static',
   integrations: [
     mdx(),
-    react({ include: ['**/tstorch/**'] }),
+    react({ include: ['**/tstorch/**', '**/demos/**'] }),
     sitemap(),
   ],
   markdown: {
@@ -21,6 +21,11 @@ export default defineConfig({
     rehypePlugins: [[rehypeKatex, { output: 'html' }]],
     shikiConfig: {
       theme: 'github-dark',
+    },
+  },
+  vite: {
+    optimizeDeps: {
+      exclude: ['@mni-ml/framework'],
     },
   },
 });
