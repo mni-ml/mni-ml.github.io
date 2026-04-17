@@ -152,7 +152,7 @@ export default function TransformerDemo() {
   return (
     <div className="demo-root">
       <div className="demo-header">
-        <h1 className="demo-title">Transformer Token Explorer</h1>
+        <h1 className="demo-title">LLM Demo</h1>
         <p className="demo-desc">
           A 12M-parameter LLM trained and running on the web using{' '}
           <a href="https://github.com/mni-ml/framework">@mni-ml/framework</a>
