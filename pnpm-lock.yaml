@@ -20,6 +20,9 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.1
         version: 3.7.2
+      '@mni-ml/framework':
+        specifier: file:../framework
+        version: file:../framework
       astro:
         specifier: ^6.0.4
         version: 6.1.7(@types/node@24.12.2)(rollup@4.60.1)
@@ -496,6 +499,65 @@ packages:
 
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
+
+  '@mni-ml/framework-darwin-arm64-webgpu@0.3.1':
+    resolution: {integrity: sha512-U2CGQLb844uv0jfYzrJp1JPPeZoHU321DGIW2q+PLJbyBcHEM6zZdU8eztkHN+znu8m5HNnUXIMZvdNj8ze3nw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@mni-ml/framework-darwin-arm64@0.3.1':
+    resolution: {integrity: sha512-FdTk97GQEXwpyK4kC28ERDTb28LsRe99z48dd3gkmAi3fHsacT3W+xasbDOOHqZXygvmUNdRcSFOnFUDQLKw0g==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@mni-ml/framework-darwin-x64-webgpu@0.3.1':
+    resolution: {integrity: sha512-pAqCzdohURJYouNd7C3bA5Or6XjC1Z68zAyXJOruNW3FdwInNXIRD8sp5O15WAodwZuEIxouaQwG4HSAs7iQuw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@mni-ml/framework-darwin-x64@0.3.1':
+    resolution: {integrity: sha512-ZVbuFJUbXtDZ+i3J1VkT8HtFB4bkOAClAuLHkGFl2zSC2DV1F62c+OFAYvvT6d3qpGbYW/XEDP3T+M6UNBpgGw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@mni-ml/framework-linux-arm64-gnu@0.3.1':
+    resolution: {integrity: sha512-blhGI23BoOyek6wiNX4or4pcg893PtQPzN18ALnWnadfcEDaMKymT9Vy3+84rxB98+M1ClZhih6AjcoZp5ZdRw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@mni-ml/framework-linux-x64-gnu-cuda@0.3.1':
+    resolution: {integrity: sha512-yW1Nd5R7eqVPTeLEdXfJeg4e75guChSu2D/TckdW8Oje6oqnfhEf7JeGbRJ33jS75a+IaF83etAtBhPTrOA8AA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@mni-ml/framework-linux-x64-gnu-webgpu@0.3.1':
+    resolution: {integrity: sha512-RIFSgKVa63h2v4NPumSrQa8dROlvcVbuhXYA//vuxhKssocSQWHH3WeCMlA80X8k+LlzTeb/YDQI4d3aZWQEFQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@mni-ml/framework-linux-x64-gnu@0.3.1':
+    resolution: {integrity: sha512-YySKWPauqMvLVJp4QjCAziBSaZK0gzGc8agwCI/wX60+VY6rI3WVmHChi/cIEfUsKccaawE/9W8D9pzehRVXHQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@mni-ml/framework-win32-x64-msvc-cuda@0.3.1':
+    resolution: {integrity: sha512-Pb9jWoZo4ocTtYyMS7bfvcFiXNRuhnYGc6rY3nfyRy01sLPbMurS9uYys+cyIbaM7xQl3/SnttBY0RbEqK0ztg==}
+    cpu: [x64]
+    os: [win32]
+
+  '@mni-ml/framework-win32-x64-msvc-webgpu@0.3.1':
+    resolution: {integrity: sha512-eztnCED54Y4fy0KioovtleqwwFq613x8Z/wAcLTjsvT8Xl+O2aL9jUfECtPbQeRS0obGBcmgfSwHMMs/KNPrcA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@mni-ml/framework-win32-x64-msvc@0.3.1':
+    resolution: {integrity: sha512-n5THgf3cJIdRld48ecAiAFAx21YCT9bo5zKNdNnkb5xHTTi9IF2SZduHZL3TKTKz52J+AFZsYoESqtWtRd9DgA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@mni-ml/framework@file:../framework':
+    resolution: {directory: ../framework, type: directory}
+    engines: {node: '>=22.18.0'}
 
   '@nodable/entities@1.1.0':
     resolution: {integrity: sha512-bidpxmTBP0pOsxULw6XlxzQpTgrAGLDHGBK/JuWhPDL6ZV0GZ/PmN9CA9do6e+A9lYI6qx6ikJUtJYRxup141g==}
@@ -2313,6 +2375,53 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
+
+  '@mni-ml/framework-darwin-arm64-webgpu@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-darwin-arm64@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-darwin-x64-webgpu@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-darwin-x64@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-linux-arm64-gnu@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-linux-x64-gnu-cuda@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-linux-x64-gnu-webgpu@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-linux-x64-gnu@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-win32-x64-msvc-cuda@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-win32-x64-msvc-webgpu@0.3.1':
+    optional: true
+
+  '@mni-ml/framework-win32-x64-msvc@0.3.1':
+    optional: true
+
+  '@mni-ml/framework@file:../framework':
+    optionalDependencies:
+      '@mni-ml/framework-darwin-arm64': 0.3.1
+      '@mni-ml/framework-darwin-arm64-webgpu': 0.3.1
+      '@mni-ml/framework-darwin-x64': 0.3.1
+      '@mni-ml/framework-darwin-x64-webgpu': 0.3.1
+      '@mni-ml/framework-linux-arm64-gnu': 0.3.1
+      '@mni-ml/framework-linux-x64-gnu': 0.3.1
+      '@mni-ml/framework-linux-x64-gnu-cuda': 0.3.1
+      '@mni-ml/framework-linux-x64-gnu-webgpu': 0.3.1
+      '@mni-ml/framework-win32-x64-msvc': 0.3.1
+      '@mni-ml/framework-win32-x64-msvc-cuda': 0.3.1
+      '@mni-ml/framework-win32-x64-msvc-webgpu': 0.3.1
 
   '@nodable/entities@1.1.0': {}
 

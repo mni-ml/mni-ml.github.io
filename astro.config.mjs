@@ -13,7 +13,7 @@ export default defineConfig({
   output: 'static',
   integrations: [
     mdx(),
-    react({ include: ['**/tstorch/**'] }),
+    react({ include: ['**/tstorch/**', '**/demos/**'] }),
     sitemap(),
   ],
   markdown: {

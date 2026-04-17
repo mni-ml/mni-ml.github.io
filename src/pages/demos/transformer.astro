@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TransformerDemo from '../../components/demos/TransformerDemo';
+---
+
+<BaseLayout title="Transformer Demo — mni-ml" description="Interactive transformer token explorer running entirely in your browser.">
+  <main>
+    <TransformerDemo client:only="react" />
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    min-height: calc(100dvh - 50px);
+  }
+</style>
