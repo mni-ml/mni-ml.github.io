@@ -94,7 +94,9 @@ export default function TransformerDemo() {
       if (!modelRes.ok) throw new Error(`Model fetch failed: ${modelRes.status}`);
 
       const contentLength = modelRes.headers.get('content-length');
-      const totalBytes = contentLength ? parseInt(contentLength, 10) : 0;
+      const parsedLength = contentLength ? parseInt(contentLength, 10) : 0;
+      const KNOWN_MODEL_SIZE = 251_000_000;
+      const totalBytes = parsedLength > 1_000_000 ? parsedLength : KNOWN_MODEL_SIZE;
       const reader = modelRes.body?.getReader();
       if (!reader) throw new Error('ReadableStream not supported');
 
@@ -145,7 +147,7 @@ export default function TransformerDemo() {
     p >= 0.01 ? (p * 100).toFixed(1) + '%' : (p * 100).toFixed(2) + '%';
 
   const displayToken = (text: string) =>
-    text.replace(/ /g, '\u00B7').replace(/\n/g, '\\n').replace(/\t/g, '\\t');
+    text.replace(/\n/g, '\\n').replace(/\t/g, '\\t');
 
   return (
     <div className="demo-root">
