@@ -1,43 +1,40 @@
-# Astro Starter Kit: Minimal
+<img width="2132" height="1200" alt="Logo" src="https://github.com/user-attachments/assets/053142ce-810c-4cf1-8335-b96efc676b14" />
+
+# mni-ml
+
+Understanding machine learning by building it from scratch.
+
+[mni-ml.github.io](https://mni-ml.github.io)
+
+## About
+
+mni-ml is a curriculum-style blog that teaches machine learning from the ground up. Rather than treating models as black boxes, each article walks through the math, intuition, and implementation — building everything from scratch using the [mni-ml/framework](https://github.com/mni-ml/framework), a TypeScript ML framework with Rust native backends.
+
+## What it covers
+
+The curriculum progresses from fundamentals to full model training:
+
+- **Intro to ML** — What machine learning is, how models learn from data, and the core loop of prediction, loss, and optimization.
+- **Gradient Descent** — How gradients drive learning, computation graphs, the forward and backward pass, and automatic differentiation.
+- **CUDA & GPU Computing** — Why GPUs matter for ML, how CUDA parallelism works, and how the framework leverages native GPU acceleration.
+- **Transformers** — Attention mechanisms, the transformer architecture, and training a language model on TinyStories from scratch.
+
+## Interactive demos
+
+- [Transformer Token Explorer](https://mni-ml.github.io/demos/transformer) — A 12M-parameter GPT trained on TinyStories, running inference entirely in the browser using the framework's pure TypeScript web backend. See next-token predictions and their probability distributions in real time.
+
+## Development
 
 ```sh
-npm create astro@latest -- --template minimal
+pnpm install
+pnpm dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Articles are authored in Notion and pulled at build time via a custom Astro content loader.
 
-## 🚀 Project Structure
+## Built with
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- [Astro](https://astro.build) — Static site generator
+- [@mni-ml/framework](https://github.com/mni-ml/framework) — TypeScript ML framework with Rust native backends
+- [React](https://react.dev) — Interactive demo components
+- [Notion](https://notion.so) — Content management
