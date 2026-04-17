@@ -1,11 +1,7 @@
-/**
- * MiniGPT model for browser inference using @mni-ml/framework browser backend.
- * Architecture mirrors train_youtube.js from mni-ml/transformer.
- */
 import {
   Tensor, Module, Parameter, Linear, Embedding,
   gelu, dropout, layerNorm, flashAttention,
-} from '@mni-ml/framework/browser';
+} from '@mni-ml/framework';
 
 class LayerNorm extends Module {
   gamma!: Parameter<Tensor>;

@@ -23,4 +23,9 @@ export default defineConfig({
       theme: 'github-dark',
     },
   },
+  vite: {
+    optimizeDeps: {
+      exclude: ['@mni-ml/framework'],
+    },
+  },
 });
