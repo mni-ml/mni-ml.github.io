@@ -620,7 +620,7 @@ export default function SpeculativeDecodingDemo() {
               <span className="demo-slider-label">
                 Temperature:{' '}
                 <span className="demo-slider-value">
-                  {temperature <= 0 ? 'greedy' : temperature.toFixed(2)}
+                  {temperature.toFixed(2)}
                 </span>
               </span>
               <input
@@ -686,9 +686,9 @@ export default function SpeculativeDecodingDemo() {
             </div>
             <div className="demo-metrics">
               <div className="demo-metric">
-                <div className="demo-metric-label">TTFT</div>
+                <div className="demo-metric-label">Acceptance rate</div>
                 <div className="demo-metric-value">
-                  {formatMs(metrics.ttftMs)}
+                  {formatPct(metrics.acceptRate)}
                 </div>
               </div>
               <div className="demo-metric">
@@ -709,14 +709,6 @@ export default function SpeculativeDecodingDemo() {
                   {metrics.tokensGenerated || '—'}
                 </div>
               </div>
-              {useSpec && (
-                <div className="demo-metric">
-                  <div className="demo-metric-label">Accept rate</div>
-                  <div className="demo-metric-value">
-                    {formatPct(metrics.acceptRate)}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </>
