@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import KvCacheDemo from '../../components/demos/KvCacheDemo';
+---
+
+<BaseLayout
+  title="KV Cache Demo — mni-ml"
+  description="Replay baseline inference, fp32 KV cache, and int8 KV cache in your browser."
+>
+  <main>
+    <KvCacheDemo client:only="react" />
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    min-height: calc(100dvh - 50px);
+  }
+</style>
