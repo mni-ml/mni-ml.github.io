@@ -118,7 +118,7 @@ export default function SpeculativeDecodingDemo() {
   const [error, setError] = useState('');
 
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
-  const [temperature, setTemperature] = useState(0.8);
+  const [temperature, setTemperature] = useState(0.1);
   const [useSpec, setUseSpec] = useState(true);
 
   const [tokens, setTokens] = useState<TokenSpan[]>([]);
@@ -626,7 +626,7 @@ export default function SpeculativeDecodingDemo() {
               <input
                 type="range"
                 min="0"
-                max="1"
+                max="0.5"
                 step="0.05"
                 value={temperature}
                 onChange={e => setTemperature(parseFloat(e.target.value))}
