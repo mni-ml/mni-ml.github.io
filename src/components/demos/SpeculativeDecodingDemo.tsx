@@ -642,7 +642,7 @@ export default function SpeculativeDecodingDemo() {
             ) : (
               <button
                 onClick={handleGenerate}
-                className="demo-btn demo-btn-primary"
+                className="demo-btn"
                 disabled={!prompt.trim()}
               >
                 Generate
@@ -801,11 +801,6 @@ export default function SpeculativeDecodingDemo() {
         .demo-btn:disabled {
           opacity: 0.4;
           cursor: not-allowed;
-        }
-
-        .demo-btn-primary {
-          color: var(--acc);
-          border-color: var(--acc);
         }
 
         .demo-progress-track {
