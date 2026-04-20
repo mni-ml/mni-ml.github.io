@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .line { stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a); }
+    .accept { fill: #38bdf8; opacity: 0.25; stroke: #38bdf8; stroke-width: 0.8; rx: 4; }
+    .reject { fill: #6b839e; opacity: 0.1; stroke: #6b839e; stroke-width: 0.8; rx: 4; stroke-dasharray: 3 2; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .warn { font-size: 7px; fill: #6b839e; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 5 2, 0 4" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Step 1: Draft model proposes -->
+  <text class="heading" x="260" y="16" text-anchor="middle">SPECULATIVE DECODING</text>
+
+  <!-- Draft model -->
+  <rect class="box" x="20" y="34" width="100" height="36" />
+  <text class="label" x="70" y="52" text-anchor="middle">Draft Model</text>
+  <text class="sub" x="70" y="64" text-anchor="middle">small, fast</text>
+
+  <line class="line" x1="122" y1="52" x2="148" y2="52" />
+
+  <!-- Draft tokens -->
+  <text class="sub" x="210" y="36">draft tokens</text>
+  <rect class="accept" x="150" y="42" width="36" height="24" />
+  <text class="label" x="168" y="58" text-anchor="middle">t₁</text>
+  <rect class="accept" x="190" y="42" width="36" height="24" />
+  <text class="label" x="208" y="58" text-anchor="middle">t₂</text>
+  <rect class="accept" x="230" y="42" width="36" height="24" />
+  <text class="label" x="248" y="58" text-anchor="middle">t₃</text>
+  <rect class="accept" x="270" y="42" width="36" height="24" />
+  <text class="label" x="288" y="58" text-anchor="middle">t₄</text>
+
+  <!-- Arrow down to verify -->
+  <line class="line" x1="228" y1="68" x2="228" y2="96" />
+  <text class="sub" x="246" y="86">verify all at once</text>
+
+  <!-- Main model -->
+  <rect class="box" x="20" y="100" width="100" height="36" />
+  <text class="label" x="70" y="118" text-anchor="middle">Main Model</text>
+  <text class="sub" x="70" y="130" text-anchor="middle">large, accurate</text>
+
+  <line class="line" x1="122" y1="118" x2="148" y2="118" />
+
+  <!-- Verification results -->
+  <text class="sub" x="210" y="102">verification</text>
+  <rect class="accept" x="150" y="108" width="36" height="24" />
+  <text class="label" x="168" y="122" text-anchor="middle">t₁</text>
+  <text class="tag" x="168" y="144">accept</text>
+
+  <rect class="accept" x="190" y="108" width="36" height="24" />
+  <text class="label" x="208" y="122" text-anchor="middle">t₂</text>
+  <text class="tag" x="208" y="144">accept</text>
+
+  <rect class="accept" x="230" y="108" width="36" height="24" />
+  <text class="label" x="248" y="122" text-anchor="middle">t₃</text>
+  <text class="tag" x="248" y="144">accept</text>
+
+  <rect class="reject" x="270" y="108" width="36" height="24" />
+  <text class="label" x="288" y="122" text-anchor="middle">t₄</text>
+  <text class="warn" x="288" y="144">reject</text>
+
+  <!-- Resample -->
+  <line class="line" x1="308" y1="118" x2="338" y2="118" />
+  <rect class="box" x="340" y="105" width="56" height="30" />
+  <text class="label" x="368" y="122" text-anchor="middle">t₄'</text>
+  <text class="sub" x="368" y="148" text-anchor="middle">resample</text>
+  <text class="sub" x="368" y="158" text-anchor="middle">from r(x)</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="20" y1="174" x2="500" y2="174" />
+
+  <!-- Result comparison -->
+  <text class="heading" x="260" y="192" text-anchor="middle">RESULT</text>
+
+  <!-- Without spec decode -->
+  <text class="sub" x="20" y="212">without:</text>
+  <rect class="box" x="76" y="200" width="36" height="22" />
+  <text class="sub" x="94" y="215" text-anchor="middle">t₁</text>
+  <text class="sub" x="130" y="215" text-anchor="middle">→</text>
+  <rect class="box" x="140" y="200" width="36" height="22" />
+  <text class="sub" x="158" y="215" text-anchor="middle">t₂</text>
+  <text class="sub" x="194" y="215" text-anchor="middle">→</text>
+  <rect class="box" x="204" y="200" width="36" height="22" />
+  <text class="sub" x="222" y="215" text-anchor="middle">t₃</text>
+  <text class="sub" x="258" y="215" text-anchor="middle">→</text>
+  <rect class="box" x="268" y="200" width="36" height="22" />
+  <text class="sub" x="286" y="215" text-anchor="middle">t₄'</text>
+  <text class="warn" x="340" y="215">4 serial main model calls</text>
+
+  <!-- With spec decode -->
+  <text class="sub" x="20" y="244">with:</text>
+  <rect class="accept" x="76" y="232" width="228" height="22" />
+  <text class="label" x="190" y="247" text-anchor="middle">t₁  t₂  t₃  t₄'</text>
+  <text class="tag" x="340" y="247">1 main model call + 1 draft</text>
+</svg>

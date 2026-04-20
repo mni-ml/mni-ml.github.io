@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 220" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .line { stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a); }
+    .cache { fill: #38bdf8; opacity: 0.12; stroke: #38bdf8; stroke-width: 0.8; stroke-dasharray: 3 2; rx: 6; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 5 2, 0 4" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Standard MHA cache -->
+  <text class="heading" x="120" y="16" text-anchor="middle">STANDARD: CACHE FULL K, V</text>
+
+  <rect class="box" x="60" y="28" width="56" height="30" />
+  <text class="label" x="88" y="47" text-anchor="middle">x_t</text>
+
+  <line class="line" x1="118" y1="38" x2="148" y2="38" />
+  <text class="sub" x="133" y="34">W_K</text>
+  <line class="line" x1="118" y1="50" x2="148" y2="50" />
+  <text class="sub" x="133" y="64">W_V</text>
+
+  <!-- Full K cached -->
+  <rect class="cache" x="150" y="24" width="190" height="22" />
+  <text class="label" x="245" y="39" text-anchor="middle">K_t (full size)</text>
+
+  <!-- Full V cached -->
+  <rect class="cache" x="150" y="50" width="190" height="22" />
+  <text class="label" x="245" y="65" text-anchor="middle">V_t (full size)</text>
+
+  <text class="sub" x="365" y="39" text-anchor="start">cached</text>
+  <text class="sub" x="365" y="65" text-anchor="start">cached</text>
+
+  <text class="sub" x="245" y="88" text-anchor="middle">memory per token: 2 × n_heads × d_head</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="30" y1="100" x2="450" y2="100" />
+
+  <!-- MLA: cache latent -->
+  <text class="heading" x="120" y="118" text-anchor="middle">MLA: CACHE COMPRESSED LATENT</text>
+
+  <rect class="box" x="20" y="130" width="56" height="30" />
+  <text class="label" x="48" y="149" text-anchor="middle">x_t</text>
+
+  <!-- Compress -->
+  <line class="line" x1="78" y1="145" x2="118" y2="145" />
+  <text class="sub" x="98" y="139">W_C</text>
+
+  <!-- Latent (small, cached) -->
+  <rect class="cache" x="120" y="132" width="80" height="26" />
+  <text class="label" x="160" y="149" text-anchor="middle">c_t</text>
+  <text class="tag" x="160" y="170" text-anchor="middle">small, cached</text>
+
+  <!-- Reconstruct K -->
+  <line class="line" x1="202" y1="138" x2="248" y2="138" />
+  <text class="sub" x="225" y="132">W_UK</text>
+
+  <rect class="box" x="250" y="126" width="70" height="24" />
+  <text class="label" x="285" y="142" text-anchor="middle">K_t</text>
+
+  <!-- Reconstruct V -->
+  <line class="line" x1="202" y1="152" x2="248" y2="152" />
+  <text class="sub" x="225" y="166">W_UV</text>
+
+  <rect class="box" x="250" y="152" width="70" height="24" />
+  <text class="label" x="285" y="168" text-anchor="middle">V_t</text>
+
+  <text class="sub" x="350" y="142" text-anchor="start">reconstructed</text>
+  <text class="sub" x="350" y="168" text-anchor="start">on demand</text>
+
+  <text class="sub" x="240" y="198" text-anchor="middle">memory per token: d_latent  &lt;&lt;  2 × n_heads × d_head</text>
+</svg>

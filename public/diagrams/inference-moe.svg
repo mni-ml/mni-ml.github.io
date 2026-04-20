@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 280" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .expert { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .active { fill: #131923; stroke: #38bdf8; stroke-width: 1; rx: 5; }
+    .inactive { fill: #131923; stroke: #1a2535; stroke-width: 0.5; rx: 5; opacity: 0.4; }
+    .line { stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a); }
+    .dim { stroke: #6b839e; stroke-width: 0.5; fill: none; opacity: 0.3; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 5 2, 0 4" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Standard dense -->
+  <text class="heading" x="110" y="16" text-anchor="middle">DENSE FFN</text>
+
+  <rect class="box" x="60" y="28" width="100" height="30" />
+  <text class="label" x="110" y="47" text-anchor="middle">token</text>
+
+  <line class="line" x1="110" y1="58" x2="110" y2="78" />
+
+  <rect class="box" x="30" y="80" width="160" height="36" />
+  <text class="label" x="110" y="103" text-anchor="middle">Feed-Forward (MLP)</text>
+  <text class="sub" x="110" y="90" text-anchor="middle">100% params active</text>
+
+  <line class="line" x1="110" y1="116" x2="110" y2="136" />
+
+  <rect class="box" x="60" y="138" width="100" height="30" />
+  <text class="label" x="110" y="157" text-anchor="middle">output</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="220" y1="16" x2="220" y2="175" />
+
+  <!-- MoE -->
+  <text class="heading" x="330" y="16" text-anchor="middle">MIXTURE OF EXPERTS</text>
+
+  <rect class="box" x="280" y="28" width="100" height="30" />
+  <text class="label" x="330" y="47" text-anchor="middle">token</text>
+
+  <!-- To router -->
+  <line class="line" x1="330" y1="58" x2="330" y2="78" />
+
+  <!-- Router -->
+  <rect class="box" x="290" y="80" width="80" height="26" />
+  <text class="label" x="330" y="97" text-anchor="middle">Router</text>
+
+  <!-- Lines from router to experts -->
+  <line class="line" x1="310" y1="106" x2="260" y2="130" />
+  <line class="dim" x1="320" y1="106" x2="310" y2="130" />
+  <line class="dim" x1="340" y1="106" x2="350" y2="130" />
+  <line class="line" x1="350" y1="106" x2="400" y2="130" />
+
+  <!-- Experts -->
+  <rect class="active" x="232" y="132" width="56" height="30" />
+  <text class="label" x="260" y="151" text-anchor="middle">E₁</text>
+
+  <rect class="inactive" x="296" y="132" width="28" height="30" />
+  <text class="sub" x="310" y="151" text-anchor="middle">E₂</text>
+
+  <rect class="inactive" x="332" y="132" width="28" height="30" />
+  <text class="sub" x="346" y="151" text-anchor="middle">E₃</text>
+
+  <rect class="active" x="368" y="132" width="56" height="30" />
+  <text class="label" x="396" y="151" text-anchor="middle">E₄</text>
+
+  <text class="tag" x="260" y="175">top-k</text>
+  <text class="tag" x="396" y="175">top-k</text>
+
+  <!-- Combine -->
+  <line class="line" x1="260" y1="162" x2="310" y2="194" />
+  <line class="line" x1="396" y1="162" x2="350" y2="194" />
+
+  <!-- Weighted sum -->
+  <rect class="box" x="280" y="196" width="100" height="26" />
+  <text class="sub" x="330" y="213" text-anchor="middle">weighted sum</text>
+
+  <line class="line" x1="330" y1="222" x2="330" y2="242" />
+
+  <rect class="box" x="280" y="244" width="100" height="26" />
+  <text class="label" x="330" y="261" text-anchor="middle">output</text>
+
+  <!-- Bottom annotation -->
+  <text class="sub" x="330" y="280" text-anchor="middle">more params, less compute per token</text>
+</svg>
