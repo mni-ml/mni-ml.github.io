@@ -8,12 +8,12 @@ import {
 const TARGET_MODEL_URL =
   'https://media.githubusercontent.com/media/mni-ml/transformer/main/out/model-final.json';
 const DRAFT_MODEL_URL =
-  'https://media.githubusercontent.com/media/mni-ml/transformer/main/out/draft-final.json';
+  'https://media.githubusercontent.com/media/mni-ml/transformer/main/out/draft-model-final.json';
 const TOKENIZER_URL =
   'https://raw.githubusercontent.com/mni-ml/transformer/main/out/tokenizer.json';
 
 const KNOWN_TARGET_SIZE = 251_000_000;
-const KNOWN_DRAFT_SIZE = 20_000_000;
+const KNOWN_DRAFT_SIZE = 45_600_000;
 
 const DEFAULT_PROMPT = 'There once was';
 const MAX_NEW_TOKENS = 256;
@@ -537,7 +537,7 @@ export default function SpeculativeDecodingDemo() {
         <div className="demo-card demo-idle">
           <p className="demo-muted">
             This demo downloads the target model (~250 MB) and a small draft
-            model (~20 MB), then runs inference entirely in your browser.
+            model (~45 MB), then runs inference entirely in your browser.
           </p>
           <button onClick={handleStart} className="demo-btn">
             Load Models &amp; Start
