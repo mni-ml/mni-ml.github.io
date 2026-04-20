@@ -69,10 +69,8 @@ export class BPETokenizer {
       this.addedByLength.sort((a, b) => b.content.length - a.content.length);
     }
 
-    this.vocabSize = Math.max(
-      Object.keys(this.vocab).length,
-      ...Object.keys(this.idToToken).map(Number),
-    ) + 1;
+    const maxId = Math.max(...Object.keys(this.idToToken).map(Number));
+    this.vocabSize = Math.max(Object.keys(this.vocab).length, maxId + 1);
 
     this.bpeRanks = {};
     if (model.merges) {
