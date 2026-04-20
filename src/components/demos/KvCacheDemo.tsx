@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BPETokenizer, type TokenizerJSON } from '../../lib/inference/bpe';
 import type { CheckpointData } from '../../lib/inference/model';
 import {
@@ -205,6 +205,7 @@ export default function KvCacheDemo() {
 
   const modelRef = useRef<ReturnType<typeof loadReplayModel> | null>(null);
   const tokenizerRef = useRef<BPETokenizer | null>(null);
+  const outputRef = useRef<HTMLDivElement | null>(null);
   const activeRunIdRef = useRef(0);
   const stopRequestedRef = useRef(false);
 
@@ -343,6 +344,11 @@ export default function KvCacheDemo() {
   const previousStepTrace = visibleRun && visibleRun.steps.length > 1
     ? visibleRun.steps[visibleRun.steps.length - 2]
     : null;
+
+  useEffect(() => {
+    if (!outputRef.current || !visibleStepTrace) return;
+    outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [visibleStepTrace]);
 
   return (
     <div className="kv-root">
@@ -501,49 +507,72 @@ export default function KvCacheDemo() {
             </div>
           </div>
 
-          {visibleRun && visibleStepTrace && (
-            <>
-              <div className="kv-section">
-                <div className="kv-label" style={{ marginBottom: 8 }}>
-                  Output
-                </div>
-                <div className="kv-output">
-                  {visibleStepTrace.tokens.map((token, index) => (
-                    <span
-                      key={`${token.id}-${index}`}
-                      className={[
-                        token.isPrompt ? 'kv-token-prompt' : 'kv-token-gen',
-                        index === visibleStepTrace.focusIndex ? 'kv-token-focus' : '',
-                      ].join(' ').trim()}
-                      title={`token ${token.id}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-              </div>
+          <div className="kv-section">
+            <div className="kv-label" style={{ marginBottom: 8 }}>
+              Output
+            </div>
+            <div ref={outputRef} className="kv-output">
+              {visibleStepTrace ? (
+                visibleStepTrace.tokens.map((token, index) => (
+                  <span
+                    key={`${token.id}-${index}`}
+                    className={[
+                      token.isPrompt ? 'kv-token-prompt' : 'kv-token-gen',
+                      index === visibleStepTrace.focusIndex ? 'kv-token-focus' : '',
+                    ].join(' ').trim()}
+                    title={`token ${token.id}`}
+                  >
+                    {token.text}
+                  </span>
+                ))
+              ) : (
+                <span className="kv-muted-inline">
+                  Click Generate to produce up to {MAX_GENERATED_TOKENS} tokens.
+                </span>
+              )}
+            </div>
+          </div>
 
-              <div className="kv-section">
-                <div className="kv-label" style={{ marginBottom: 8 }}>
-                  Metrics
+          <div className="kv-section">
+            <div className="kv-label" style={{ marginBottom: 8 }}>
+              Metrics
+            </div>
+            {visibleRun && visibleStepTrace ? (
+              <MetricsSection run={visibleRun} step={visibleStepTrace} />
+            ) : (
+              <div className="kv-metrics">
+                <div className="kv-metric">
+                  <div className="kv-metric-label">Total</div>
+                  <div className="kv-metric-value">—</div>
                 </div>
-                <MetricsSection run={visibleRun} step={visibleStepTrace} />
+                <div className="kv-metric">
+                  <div className="kv-metric-label">Decode</div>
+                  <div className="kv-metric-value">—</div>
+                </div>
+                <div className="kv-metric">
+                  <div className="kv-metric-label">Throughput</div>
+                  <div className="kv-metric-value">—</div>
+                </div>
+                <div className="kv-metric">
+                  <div className="kv-metric-label">Cache used</div>
+                  <div className="kv-metric-value">—</div>
+                </div>
               </div>
+            )}
+          </div>
 
-              <div className="kv-stage-grid">
-                {/* <DecodeFlowPane
-                  run={visibleRun}
-                  step={visibleStepTrace}
-                  previousStep={previousStepTrace}
-                /> */}
-                {/* <MemorySquarePane
-                  run={visibleRun}
-                  step={visibleStepTrace}
-                  previousStep={previousStepTrace}
-                /> */}
-              </div>
-            </>
-          )}
+          <div className="kv-stage-grid">
+            {/* <DecodeFlowPane
+              run={visibleRun}
+              step={visibleStepTrace}
+              previousStep={previousStepTrace}
+            /> */}
+            {/* <MemorySquarePane
+              run={visibleRun}
+              step={visibleStepTrace}
+              previousStep={previousStepTrace}
+            /> */}
+          </div>
         </>
       )}
 
@@ -613,6 +642,11 @@ export default function KvCacheDemo() {
           font-size: 12px;
           color: var(--muted);
           margin-bottom: 14px;
+        }
+
+        .kv-muted-inline {
+          font-size: 12px;
+          color: var(--muted);
         }
 
         .kv-btn {
