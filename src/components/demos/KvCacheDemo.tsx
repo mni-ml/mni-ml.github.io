@@ -365,7 +365,7 @@ export default function KvCacheDemo() {
           <p className="kv-muted">
             This demo downloads the model (~250 MB), and runs inference entirely in your browser with KV cache optimization and quantization.
           </p>
-          <button type="button" onClick={handleLoadModel} className="kv-btn">
+          <button onClick={handleLoadModel} className="demo-btn">
             Load Model & Start
           </button>
         </div>
@@ -398,12 +398,11 @@ export default function KvCacheDemo() {
         <div className="kv-card kv-card-error">
           <div className="kv-error-text">{error}</div>
           <button
-            type="button"
             onClick={() => {
               setError('');
               setPhase('idle');
             }}
-            className="kv-btn"
+            className="demo-btn"
           >
             try again
           </button>
@@ -477,8 +476,7 @@ export default function KvCacheDemo() {
 
               {isBenchmarkRunning ? (
                 <button
-                  type="button"
-                  className="kv-btn"
+                  className="demo-btn"
                   onClick={() => {
                     stopRequestedRef.current = true;
                     setProgress(current => ({
@@ -491,8 +489,7 @@ export default function KvCacheDemo() {
                 </button>
               ) : (
                 <button
-                  type="button"
-                  className="kv-btn kv-btn-primary"
+                  className="demo-btn"
                   onClick={() => {
                     runSelectedMode().catch((err: any) => {
                       setError(err?.message || 'Unknown error');
@@ -649,7 +646,7 @@ export default function KvCacheDemo() {
           color: var(--muted);
         }
 
-        .kv-btn {
+        .demo-btn {
           font-family: var(--font-mono);
           font-size: 11px;
           color: var(--muted);
@@ -661,17 +658,17 @@ export default function KvCacheDemo() {
           transition: color 0.2s, border-color 0.2s;
         }
 
-        .kv-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .kv-btn:hover {
+        .demo-btn:hover {
           color: var(--acc);
           border-color: var(--acc);
         }
 
-        .kv-btn-primary {
+        .demo-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .demo-btn-primary {
           color: var(--acc);
           border-color: var(--acc);
         }
