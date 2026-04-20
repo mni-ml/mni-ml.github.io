@@ -54,7 +54,7 @@ function formatBytes(bytes: number): string {
 function MetricsSection({ run, step }: { run: RunTrace; step: StepTrace }) {
   const cards = [
     { label: 'Total', value: formatMs(run.totalMs) },
-    { label: 'Decode', value: formatMs(run.decodeMsPerToken) },
+    { label: 'ITL', value: formatMs(run.decodeMsPerToken) },
     { label: 'Throughput', value: formatRate(run.tokensPerSec) },
     {
       label: 'Cache used',
