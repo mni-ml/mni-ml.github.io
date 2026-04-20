@@ -81,6 +81,8 @@ export interface BenchmarkOptions {
 
 export interface BenchmarkModeOptions extends BenchmarkOptions {
   mode: BenchmarkMode;
+  onStep?: (run: RunTrace, step: StepTrace) => void;
+  shouldStop?: () => boolean;
 }
 
 const MODE_ORDER: BenchmarkMode[] = ['baseline', 'kv-fp32', 'kv-int8'];
@@ -586,6 +588,47 @@ type RunSeed = {
   decodeMs: number;
 };
 
+function buildRunTrace(
+  tokenizer: BPETokenizer,
+  config: ModelConfig,
+  prompt: string,
+  promptTokens: number,
+  maxNewTokens: number,
+  temperature: number,
+  context: number[],
+  runSeed: RunSeed,
+  steps: StepTrace[],
+): RunTrace {
+  const generatedTokens = Math.max(0, context.length - promptTokens);
+  const totalMs = runSeed.prefillMs + runSeed.decodeMs;
+  const lastStep = steps[steps.length - 1];
+  const cacheLen = lastStep?.cacheLen ?? 0;
+  const bytes = cacheBytesForMode(config, cacheLen, runSeed.cacheMode);
+
+  return {
+    mode: runSeed.mode,
+    cacheMode: runSeed.cacheMode,
+    prompt,
+    promptTokens,
+    generatedTokens,
+    temperature,
+    blockSize: config.blockSize,
+    nLayer: config.nLayer,
+    nHead: config.nHead,
+    replayCapacity: promptTokens + maxNewTokens,
+    totalMs,
+    prefillMs: runSeed.prefillMs,
+    decodeMs: runSeed.decodeMs,
+    decodeMsPerToken: generatedTokens > 0 ? runSeed.decodeMs / generatedTokens : 0,
+    tokensPerSec: totalMs > 0 ? (generatedTokens * 1000) / totalMs : 0,
+    cacheLen,
+    cacheBytesUsed: bytes.usedBytes,
+    cacheBytesCapacity: bytes.capacityBytes,
+    text: tokenizer.decode(context),
+    steps: steps.slice(),
+  };
+}
+
 async function runBaselineTrace(
   model: ReplayMiniGPT,
   tokenizer: BPETokenizer,
@@ -593,6 +636,8 @@ async function runBaselineTrace(
   maxNewTokens: number,
   temperature: number,
   onProgress?: (progress: BenchmarkProgress) => void,
+  onStep?: (run: RunTrace, step: StepTrace) => void,
+  shouldStop?: () => boolean,
 ): Promise<RunTrace> {
   const promptIds = ensurePromptTokens(tokenizer, prompt);
   if (promptIds.length + maxNewTokens > model.config.blockSize) {
@@ -630,7 +675,34 @@ async function runBaselineTrace(
       stepMs: runSeed.prefillMs,
       note: makeNote('baseline', 'prefill', context.length, 0, 0, 'none'),
     }));
+    onStep?.(
+      buildRunTrace(
+        tokenizer,
+        model.config,
+        prompt,
+        promptIds.length,
+        maxNewTokens,
+        temperature,
+        context,
+        runSeed,
+        steps,
+      ),
+      steps[steps.length - 1],
+    );
     await yieldToBrowser();
+    if (shouldStop?.()) {
+      return buildRunTrace(
+        tokenizer,
+        model.config,
+        prompt,
+        promptIds.length,
+        maxNewTokens,
+        temperature,
+        context,
+        runSeed,
+        steps,
+      );
+    }
 
     for (let step = 0; step < maxNewTokens; step++) {
       const nextToken = sampleNextToken(logits, model.vocabSize, temperature);
@@ -652,36 +724,40 @@ async function runBaselineTrace(
         stepMs,
         note: makeNote('baseline', 'decode', context.length, 0, 0, 'none'),
       }));
+      onStep?.(
+        buildRunTrace(
+          tokenizer,
+          model.config,
+          prompt,
+          promptIds.length,
+          maxNewTokens,
+          temperature,
+          context,
+          runSeed,
+          steps,
+        ),
+        steps[steps.length - 1],
+      );
       onProgress?.({ label: `Running baseline... ${step + 1}/${maxNewTokens}`, current: step + 1, total: maxNewTokens });
       await yieldToBrowser();
+      if (shouldStop?.()) {
+        break;
+      }
     }
   } finally {
     endNoGrad();
   }
-
-  const totalMs = runSeed.prefillMs + runSeed.decodeMs;
-  return {
-    mode: 'baseline',
-    cacheMode: 'none',
+  return buildRunTrace(
+    tokenizer,
+    model.config,
     prompt,
-    promptTokens: promptIds.length,
-    generatedTokens: maxNewTokens,
+    promptIds.length,
+    maxNewTokens,
     temperature,
-    blockSize: model.config.blockSize,
-    nLayer: model.config.nLayer,
-    nHead: model.config.nHead,
-    replayCapacity: promptIds.length + maxNewTokens,
-    totalMs,
-    prefillMs: runSeed.prefillMs,
-    decodeMs: runSeed.decodeMs,
-    decodeMsPerToken: maxNewTokens > 0 ? runSeed.decodeMs / maxNewTokens : 0,
-    tokensPerSec: totalMs > 0 ? (maxNewTokens * 1000) / totalMs : 0,
-    cacheLen: 0,
-    cacheBytesUsed: 0,
-    cacheBytesCapacity: 0,
-    text: tokenizer.decode(context),
+    context,
+    runSeed,
     steps,
-  };
+  );
 }
 
 async function runKvTrace(
@@ -692,6 +768,8 @@ async function runKvTrace(
   temperature: number,
   cacheMode: Exclude<CacheMode, 'none'>,
   onProgress?: (progress: BenchmarkProgress) => void,
+  onStep?: (run: RunTrace, step: StepTrace) => void,
+  shouldStop?: () => boolean,
 ): Promise<RunTrace> {
   const promptIds = ensurePromptTokens(tokenizer, prompt);
   if (promptIds.length + maxNewTokens > model.config.blockSize) {
@@ -735,7 +813,34 @@ async function runKvTrace(
       stepMs: runSeed.prefillMs,
       note: makeNote(mode, 'prefill', context.length, 0, prefillCacheLen, cacheMode),
     }));
+    onStep?.(
+      buildRunTrace(
+        tokenizer,
+        model.config,
+        prompt,
+        promptIds.length,
+        maxNewTokens,
+        temperature,
+        context,
+        runSeed,
+        steps,
+      ),
+      steps[steps.length - 1],
+    );
     await yieldToBrowser();
+    if (shouldStop?.()) {
+      return buildRunTrace(
+        tokenizer,
+        model.config,
+        prompt,
+        promptIds.length,
+        maxNewTokens,
+        temperature,
+        context,
+        runSeed,
+        steps,
+      );
+    }
 
     if (!logits) {
       throw new Error('kv prefill did not produce logits');
@@ -762,39 +867,41 @@ async function runKvTrace(
         stepMs,
         note: makeNote(mode, 'decode', context.length, Math.max(0, cacheLen - 1), cacheLen, cacheMode),
       }));
+      onStep?.(
+        buildRunTrace(
+          tokenizer,
+          model.config,
+          prompt,
+          promptIds.length,
+          maxNewTokens,
+          temperature,
+          context,
+          runSeed,
+          steps,
+        ),
+        steps[steps.length - 1],
+      );
       onProgress?.({ label: `Running ${mode}... ${step + 1}/${maxNewTokens}`, current: step + 1, total: maxNewTokens });
       await yieldToBrowser();
+      if (shouldStop?.()) {
+        break;
+      }
     }
   } finally {
     endNoGrad();
     for (const cache of caches) cache.free();
   }
-
-  const totalMs = runSeed.prefillMs + runSeed.decodeMs;
-  const cacheLen = promptIds.length + maxNewTokens;
-  const bytes = cacheBytesForMode(model.config, cacheLen, cacheMode);
-  return {
-    mode,
-    cacheMode,
+  return buildRunTrace(
+    tokenizer,
+    model.config,
     prompt,
-    promptTokens: promptIds.length,
-    generatedTokens: maxNewTokens,
+    promptIds.length,
+    maxNewTokens,
     temperature,
-    blockSize: model.config.blockSize,
-    nLayer: model.config.nLayer,
-    nHead: model.config.nHead,
-    replayCapacity: promptIds.length + maxNewTokens,
-    totalMs,
-    prefillMs: runSeed.prefillMs,
-    decodeMs: runSeed.decodeMs,
-    decodeMsPerToken: maxNewTokens > 0 ? runSeed.decodeMs / maxNewTokens : 0,
-    tokensPerSec: totalMs > 0 ? (maxNewTokens * 1000) / totalMs : 0,
-    cacheLen,
-    cacheBytesUsed: bytes.usedBytes,
-    cacheBytesCapacity: bytes.capacityBytes,
-    text: tokenizer.decode(context),
+    context,
+    runSeed,
     steps,
-  };
+  );
 }
 
 export async function runBenchmarkSuite(
@@ -838,10 +945,39 @@ export async function runBenchmarkMode(
   const temperature = options.temperature ?? 0;
 
   if (options.mode === 'baseline') {
-    return runBaselineTrace(model, tokenizer, prompt, maxNewTokens, temperature, options.onProgress);
+    return runBaselineTrace(
+      model,
+      tokenizer,
+      prompt,
+      maxNewTokens,
+      temperature,
+      options.onProgress,
+      options.onStep,
+      options.shouldStop,
+    );
   }
   if (options.mode === 'kv-fp32') {
-    return runKvTrace(model, tokenizer, prompt, maxNewTokens, temperature, 'fp32', options.onProgress);
+    return runKvTrace(
+      model,
+      tokenizer,
+      prompt,
+      maxNewTokens,
+      temperature,
+      'fp32',
+      options.onProgress,
+      options.onStep,
+      options.shouldStop,
+    );
   }
-  return runKvTrace(model, tokenizer, prompt, maxNewTokens, temperature, 'int8', options.onProgress);
+  return runKvTrace(
+    model,
+    tokenizer,
+    prompt,
+    maxNewTokens,
+    temperature,
+    'int8',
+    options.onProgress,
+    options.onStep,
+    options.shouldStop,
+  );
 }

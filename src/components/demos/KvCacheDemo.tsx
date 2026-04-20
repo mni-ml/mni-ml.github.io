@@ -197,12 +197,12 @@ export default function KvCacheDemo() {
   const [kvCacheEnabled, setKvCacheEnabled] = useState(true);
   const [kvQuantEnabled, setKvQuantEnabled] = useState(false);
   const [run, setRun] = useState<RunTrace | null>(null);
-  const [visibleStep, setVisibleStep] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   const modelRef = useRef<ReturnType<typeof loadReplayModel> | null>(null);
   const tokenizerRef = useRef<BPETokenizer | null>(null);
   const autoRerunReadyRef = useRef(false);
+  const activeRunIdRef = useRef(0);
+  const stopRequestedRef = useRef(false);
   const autoRerunParamsRef = useRef({
     prompt: DEFAULT_PROMPT,
     temperature: DEFAULT_TEMPERATURE,
@@ -215,6 +215,19 @@ export default function KvCacheDemo() {
     : kvQuantEnabled
       ? 'kv-int8'
       : 'kv-fp32';
+
+  const requestModeSwitch = useCallback((nextCacheEnabled: boolean, nextQuantEnabled: boolean) => {
+    setKvCacheEnabled(nextCacheEnabled);
+    setKvQuantEnabled(nextQuantEnabled);
+
+    if (isBenchmarkRunning) {
+      stopRequestedRef.current = true;
+      setProgress(current => ({
+        ...current,
+        label: 'Stopping after the current decode step to switch modes...',
+      }));
+    }
+  }, [isBenchmarkRunning]);
 
   const loadArtifacts = useCallback(async () => {
     setPhase('downloading');
@@ -279,10 +292,12 @@ export default function KvCacheDemo() {
       throw new Error(`prompt is too long for this ${model.config.blockSize}-token context window`);
     }
 
-    setIsGenerating(false);
-    setVisibleStep(0);
+    const runId = activeRunIdRef.current + 1;
+    activeRunIdRef.current = runId;
+    stopRequestedRef.current = false;
+    setRun(null);
     setPhase('running');
-    setProgress({ loaded: 0, total: maxNewTokens, label: `Running ${selectedMode} prefill...` });
+    setProgress({ loaded: 0, total: maxNewTokens, label: `Running prefill...` });
 
     const nextRun = await runBenchmarkMode(model, tokenizer, {
       mode: selectedMode,
@@ -290,14 +305,18 @@ export default function KvCacheDemo() {
       maxNewTokens,
       temperature,
       onProgress: setProgress,
+      onStep: partialRun => {
+        if (activeRunIdRef.current !== runId) return;
+        setRun(partialRun);
+      },
+      shouldStop: () => activeRunIdRef.current !== runId || stopRequestedRef.current,
     });
 
+    if (activeRunIdRef.current !== runId) return;
     autoRerunReadyRef.current = true;
     autoRerunParamsRef.current = { prompt, temperature, mode: selectedMode };
     setRun(nextRun);
-    setVisibleStep(0);
     setPhase('ready');
-    setIsGenerating(true);
   }, [prompt, selectedMode, temperature]);
 
   const handleLoadAndRun = useCallback(async () => {
@@ -314,22 +333,8 @@ export default function KvCacheDemo() {
   }, [loadArtifacts, runSelectedMode]);
 
   useEffect(() => {
-    if (!run || !isGenerating) return undefined;
-    const maxStep = run.steps.length - 1;
-    if (visibleStep >= maxStep) {
-      setIsGenerating(false);
-      return undefined;
-    }
-    const nextStep = run.steps[Math.min(visibleStep + 1, maxStep)];
-    const delay = Math.max(45, Math.min(220, Math.round(nextStep.stepMs * 1.4)));
-    const timer = window.setTimeout(() => {
-      setVisibleStep(current => Math.min(current + 1, maxStep));
-    }, delay);
-    return () => window.clearTimeout(timer);
-  }, [isGenerating, run, visibleStep]);
-
-  useEffect(() => {
     if (!autoRerunReadyRef.current) return undefined;
+    if (phase !== 'ready') return undefined;
     if (
       prompt === autoRerunParamsRef.current.prompt
       && temperature === autoRerunParamsRef.current.temperature
@@ -345,12 +350,14 @@ export default function KvCacheDemo() {
       });
     }, 450);
     return () => window.clearTimeout(timer);
-  }, [prompt, runSelectedMode, selectedMode, temperature]);
+  }, [phase, prompt, runSelectedMode, selectedMode, temperature]);
 
   const visibleRun = run;
-  const visibleStepTrace = visibleRun?.steps[visibleStep] ?? null;
-  const previousStepTrace = visibleRun && visibleStep > 0
-    ? visibleRun.steps[visibleStep - 1]
+  const visibleStepTrace = visibleRun
+    ? visibleRun.steps[visibleRun.steps.length - 1] ?? null
+    : null;
+  const previousStepTrace = visibleRun && visibleRun.steps.length > 1
+    ? visibleRun.steps[visibleRun.steps.length - 2]
     : null;
 
   return (
@@ -370,7 +377,7 @@ export default function KvCacheDemo() {
             and then animates token-by-token generation until it reaches the model limit or you stop it.
           </p>
           <button type="button" onClick={handleLoadAndRun} className="kv-btn">
-            load model and start
+            Load Model & Start
           </button>
         </div>
       )}
@@ -439,12 +446,9 @@ export default function KvCacheDemo() {
                     checked={kvCacheEnabled}
                     onChange={event => {
                       const enabled = event.target.checked;
-                      setKvCacheEnabled(enabled);
-                      if (!enabled) setKvQuantEnabled(false);
-                      setIsGenerating(false);
-                      setVisibleStep(0);
+                      requestModeSwitch(enabled, enabled ? kvQuantEnabled : false);
                     }}
-                    disabled={isBenchmarkRunning}
+                    disabled={phase === 'downloading' || phase === 'parsing'}
                   />
                   <span>kv cache optimization</span>
                 </label>
@@ -455,12 +459,9 @@ export default function KvCacheDemo() {
                     checked={kvQuantEnabled}
                     onChange={event => {
                       const enabled = event.target.checked;
-                      setKvQuantEnabled(enabled);
-                      if (enabled) setKvCacheEnabled(true);
-                      setIsGenerating(false);
-                      setVisibleStep(0);
+                      requestModeSwitch(enabled ? true : kvCacheEnabled, enabled);
                     }}
-                    disabled={isBenchmarkRunning}
+                    disabled={phase === 'downloading' || phase === 'parsing'}
                   />
                   <span>kv quantization</span>
                 </label>
@@ -484,6 +485,37 @@ export default function KvCacheDemo() {
                   className="kv-slider"
                 />
               </div>
+
+              {isBenchmarkRunning ? (
+                <button
+                  type="button"
+                  className="kv-btn"
+                  onClick={() => {
+                    stopRequestedRef.current = true;
+                    setProgress(current => ({
+                      ...current,
+                      label: 'Stopping after the current decode step...',
+                    }));
+                  }}
+                  disabled={phase === 'downloading' || phase === 'parsing'}
+                >
+                  Stop
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="kv-btn kv-btn-primary"
+                  onClick={() => {
+                    runSelectedMode().catch((err: any) => {
+                      setError(err?.message || 'Unknown error');
+                      setPhase('error');
+                    });
+                  }}
+                  disabled={!prompt.trim() || phase === 'downloading' || phase === 'parsing'}
+                >
+                  Generate
+                </button>
+              )}
             </div>
           </div>
 
@@ -520,42 +552,17 @@ export default function KvCacheDemo() {
                 <MetricsSection run={visibleRun} step={visibleStepTrace} />
               </div>
 
-              <div className="kv-section">
-                <div className="kv-generate-toolbar">
-                  <button
-                    type="button"
-                    className="kv-btn"
-                    onClick={() => {
-                      if (!isGenerating && visibleStep >= visibleRun.steps.length - 1) {
-                        setVisibleStep(0);
-                      }
-                      setIsGenerating(value => !value);
-                    }}
-                  >
-                    {isGenerating ? 'stop' : 'generate'}
-                  </button>
-
-                  <div className="kv-progress-inline">
-                    <span className="kv-progress-copy">
-                      {visibleStepTrace.phase === 'prefill'
-                        ? 'prefill'
-                        : `${visibleStep}/${visibleRun.generatedTokens} generated`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
               <div className="kv-stage-grid">
-                <DecodeFlowPane
+                {/* <DecodeFlowPane
                   run={visibleRun}
                   step={visibleStepTrace}
                   previousStep={previousStepTrace}
-                />
-                <MemorySquarePane
+                /> */}
+                {/* <MemorySquarePane
                   run={visibleRun}
                   step={visibleStepTrace}
                   previousStep={previousStepTrace}
-                />
+                /> */}
               </div>
             </>
           )}
@@ -648,6 +655,11 @@ export default function KvCacheDemo() {
         }
 
         .kv-btn:hover {
+          color: var(--acc);
+          border-color: var(--acc);
+        }
+
+        .kv-btn-primary {
           color: var(--acc);
           border-color: var(--acc);
         }
