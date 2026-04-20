@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { BPETokenizer, type TokenizerJSON } from '../../lib/inference/bpe';
 import type { CheckpointData } from '../../lib/inference/model';
 import {
@@ -18,10 +18,15 @@ const KNOWN_MODEL_SIZE = 251_000_000;
 const DEFAULT_PROMPT = 'Once upon a time';
 const MAX_GENERATED_TOKENS = 256;
 const DEFAULT_TEMPERATURE = 0;
+const MAX_TEMPERATURE = 0.5;
 const MEMORY_GRID_SIZE = 12;
 const MEMORY_GRID_CELLS = MEMORY_GRID_SIZE * MEMORY_GRID_SIZE;
 
 type Phase = 'idle' | 'downloading' | 'parsing' | 'running' | 'ready' | 'error';
+
+function clampTemperature(value: number): number {
+  return Math.max(0, Math.min(MAX_TEMPERATURE, value));
+}
 
 function formatMs(value: number | null): string {
   if (value == null) return '—';
@@ -193,21 +198,15 @@ export default function KvCacheDemo() {
   const [progress, setProgress] = useState({ loaded: 0, total: 0, label: '' });
   const [error, setError] = useState('');
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
-  const [temperature, setTemperature] = useState(DEFAULT_TEMPERATURE);
+  const [temperature, setTemperature] = useState(clampTemperature(DEFAULT_TEMPERATURE));
   const [kvCacheEnabled, setKvCacheEnabled] = useState(true);
   const [kvQuantEnabled, setKvQuantEnabled] = useState(false);
   const [run, setRun] = useState<RunTrace | null>(null);
 
   const modelRef = useRef<ReturnType<typeof loadReplayModel> | null>(null);
   const tokenizerRef = useRef<BPETokenizer | null>(null);
-  const autoRerunReadyRef = useRef(false);
   const activeRunIdRef = useRef(0);
   const stopRequestedRef = useRef(false);
-  const autoRerunParamsRef = useRef({
-    prompt: DEFAULT_PROMPT,
-    temperature: DEFAULT_TEMPERATURE,
-    mode: 'kv-fp32' as BenchmarkMode,
-  });
 
   const isBenchmarkRunning = phase === 'running';
   const selectedMode: BenchmarkMode = !kvCacheEnabled
@@ -292,6 +291,7 @@ export default function KvCacheDemo() {
       throw new Error(`prompt is too long for this ${model.config.blockSize}-token context window`);
     }
 
+    const runTemperature = clampTemperature(temperature);
     const runId = activeRunIdRef.current + 1;
     activeRunIdRef.current = runId;
     stopRequestedRef.current = false;
@@ -303,8 +303,14 @@ export default function KvCacheDemo() {
       mode: selectedMode,
       prompt,
       maxNewTokens,
-      temperature,
-      onProgress: setProgress,
+      temperature: runTemperature,
+      onProgress: runProgress => {
+        setProgress({
+          loaded: runProgress.current,
+          total: runProgress.total,
+          label: runProgress.label,
+        });
+      },
       onStep: partialRun => {
         if (activeRunIdRef.current !== runId) return;
         setRun(partialRun);
@@ -313,44 +319,22 @@ export default function KvCacheDemo() {
     });
 
     if (activeRunIdRef.current !== runId) return;
-    autoRerunReadyRef.current = true;
-    autoRerunParamsRef.current = { prompt, temperature, mode: selectedMode };
     setRun(nextRun);
     setPhase('ready');
   }, [prompt, selectedMode, temperature]);
 
-  const handleLoadAndRun = useCallback(async () => {
+  const handleLoadModel = useCallback(async () => {
     try {
       setError('');
       if (!modelRef.current || !tokenizerRef.current) {
         await loadArtifacts();
       }
-      await runSelectedMode();
+      setPhase('ready');
     } catch (err: any) {
       setError(err?.message || 'Unknown error');
       setPhase('error');
     }
-  }, [loadArtifacts, runSelectedMode]);
-
-  useEffect(() => {
-    if (!autoRerunReadyRef.current) return undefined;
-    if (phase !== 'ready') return undefined;
-    if (
-      prompt === autoRerunParamsRef.current.prompt
-      && temperature === autoRerunParamsRef.current.temperature
-      && selectedMode === autoRerunParamsRef.current.mode
-    ) {
-      return undefined;
-    }
-
-    const timer = window.setTimeout(() => {
-      runSelectedMode().catch((err: any) => {
-        setError(err?.message || 'Unknown error');
-        setPhase('error');
-      });
-    }, 450);
-    return () => window.clearTimeout(timer);
-  }, [phase, prompt, runSelectedMode, selectedMode, temperature]);
+  }, [loadArtifacts]);
 
   const visibleRun = run;
   const visibleStepTrace = visibleRun
@@ -373,10 +357,9 @@ export default function KvCacheDemo() {
       {phase === 'idle' && (
         <div className="kv-card">
           <p className="kv-muted">
-            This demo downloads the transformer checkpoint (~250 MB), runs the selected decode path,
-            and then animates token-by-token generation until it reaches the model limit or you stop it.
+            This demo downloads the model (~250 MB), and runs inference entirely in your browser with KV cache optimization and quantization.
           </p>
-          <button type="button" onClick={handleLoadAndRun} className="kv-btn">
+          <button type="button" onClick={handleLoadModel} className="kv-btn">
             Load Model & Start
           </button>
         </div>
@@ -421,7 +404,7 @@ export default function KvCacheDemo() {
         </div>
       )}
 
-      {(visibleRun || phase === 'running') && (
+      {(visibleRun || phase === 'running' || phase === 'ready') && (
         <>
           <div className="kv-section">
             <div className="kv-label" style={{ marginBottom: 8 }}>
@@ -477,10 +460,10 @@ export default function KvCacheDemo() {
                 <input
                   type="range"
                   min="0"
-                  max="1"
+                  max={MAX_TEMPERATURE}
                   step="0.05"
                   value={temperature}
-                  onChange={event => setTemperature(parseFloat(event.target.value))}
+                  onChange={event => setTemperature(clampTemperature(parseFloat(event.target.value)))}
                   disabled={isBenchmarkRunning}
                   className="kv-slider"
                 />
@@ -497,7 +480,6 @@ export default function KvCacheDemo() {
                       label: 'Stopping after the current decode step...',
                     }));
                   }}
-                  disabled={phase === 'downloading' || phase === 'parsing'}
                 >
                   Stop
                 </button>
@@ -518,10 +500,6 @@ export default function KvCacheDemo() {
               )}
             </div>
           </div>
-
-          {isBenchmarkRunning && (
-            <div className="kv-status">{progress.label}</div>
-          )}
 
           {visibleRun && visibleStepTrace && (
             <>
@@ -646,7 +624,7 @@ export default function KvCacheDemo() {
           border-radius: 4px;
           padding: 5px 12px;
           cursor: pointer;
-          transition: color 0.2s, border-color 0.2s, background 0.2s;
+          transition: color 0.2s, border-color 0.2s;
         }
 
         .kv-btn:disabled {
@@ -829,12 +807,6 @@ export default function KvCacheDemo() {
 
         .kv-slider:hover::-moz-range-thumb {
           transform: scale(1.15);
-        }
-
-        .kv-status {
-          font-size: 12px;
-          color: var(--muted);
-          margin-bottom: 16px;
         }
 
         .kv-output {
