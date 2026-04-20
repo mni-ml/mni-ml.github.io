@@ -79,6 +79,10 @@ export interface BenchmarkOptions {
   onProgress?: (progress: BenchmarkProgress) => void;
 }
 
+export interface BenchmarkModeOptions extends BenchmarkOptions {
+  mode: BenchmarkMode;
+}
+
 const MODE_ORDER: BenchmarkMode[] = ['baseline', 'kv-fp32', 'kv-int8'];
 const EPS_SCALE = 1e-8;
 
@@ -822,4 +826,22 @@ export async function runBenchmarkSuite(
     runs,
     outputsMatch,
   };
+}
+
+export async function runBenchmarkMode(
+  model: ReplayMiniGPT,
+  tokenizer: BPETokenizer,
+  options: BenchmarkModeOptions,
+): Promise<RunTrace> {
+  const prompt = options.prompt;
+  const maxNewTokens = options.maxNewTokens;
+  const temperature = options.temperature ?? 0;
+
+  if (options.mode === 'baseline') {
+    return runBaselineTrace(model, tokenizer, prompt, maxNewTokens, temperature, options.onProgress);
+  }
+  if (options.mode === 'kv-fp32') {
+    return runKvTrace(model, tokenizer, prompt, maxNewTokens, temperature, 'fp32', options.onProgress);
+  }
+  return runKvTrace(model, tokenizer, prompt, maxNewTokens, temperature, 'int8', options.onProgress);
 }

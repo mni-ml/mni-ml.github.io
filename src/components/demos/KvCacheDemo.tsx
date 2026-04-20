@@ -3,9 +3,8 @@ import { BPETokenizer, type TokenizerJSON } from '../../lib/inference/bpe';
 import type { CheckpointData } from '../../lib/inference/model';
 import {
   loadReplayModel,
-  runBenchmarkSuite,
+  runBenchmarkMode,
   type BenchmarkMode,
-  type BenchmarkSuite,
   type RunTrace,
   type StepTrace,
 } from '../../lib/inference/kvReplay';
@@ -17,10 +16,10 @@ const TOKENIZER_URL =
 const KNOWN_MODEL_SIZE = 251_000_000;
 
 const DEFAULT_PROMPT = 'Once upon a time';
-const DEFAULT_TOKENS = 32;
+const MAX_GENERATED_TOKENS = 256;
 const DEFAULT_TEMPERATURE = 0;
-const TOKEN_OPTIONS = [8, 16, 32, 64];
-const MODE_ORDER: BenchmarkMode[] = ['baseline', 'kv-fp32', 'kv-int8'];
+const MEMORY_GRID_SIZE = 12;
+const MEMORY_GRID_CELLS = MEMORY_GRID_SIZE * MEMORY_GRID_SIZE;
 
 type Phase = 'idle' | 'downloading' | 'parsing' | 'running' | 'ready' | 'error';
 
@@ -47,112 +46,6 @@ function formatBytes(bytes: number): string {
   return `${value.toFixed(2)} ${units[unitIndex]}`;
 }
 
-function modeLabel(mode: BenchmarkMode): string {
-  if (mode === 'kv-fp32') return 'kv fp32';
-  if (mode === 'kv-int8') return 'kv int8';
-  return 'baseline';
-}
-
-function formatReplayValue(step: StepTrace): string {
-  if (step.phase === 'prefill') return 'prefill';
-  return `decode ${step.stepIndex}`;
-}
-
-function MatrixPane({ run, step }: { run: RunTrace; step: StepTrace }) {
-  const size = Math.min(step.seqLen, run.replayCapacity);
-  const cells = [];
-
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      let className = 'kv-matrix-cell';
-      if (col > row) {
-        className += ' is-empty';
-      } else if (step.phase === 'prefill') {
-        className += ' is-active';
-      } else if (run.cacheMode === 'none') {
-        className += row === size - 1 ? ' is-focus' : ' is-active';
-      } else {
-        className += row === size - 1 ? ' is-focus' : ' is-history';
-      }
-
-      cells.push(
-        <div
-          key={`${row}-${col}`}
-          className={className}
-          title={`row ${row + 1}, col ${col + 1}`}
-        />,
-      );
-    }
-  }
-
-  return (
-    <section className="kv-pane">
-      <div className="kv-pane-header">
-        <span className="kv-pane-title">causal work</span>
-        <span className="kv-pane-meta">{size} × {size}</span>
-      </div>
-      <div
-        className="kv-matrix"
-        style={{ gridTemplateColumns: `repeat(${size || 1}, minmax(0, 1fr))` }}
-      >
-        {cells}
-      </div>
-    </section>
-  );
-}
-
-function CachePane({ run, step }: { run: RunTrace; step: StepTrace }) {
-  if (run.cacheMode === 'none') {
-    return (
-      <section className="kv-pane">
-        <div className="kv-pane-header">
-          <span className="kv-pane-title">kv cache</span>
-          <span className="kv-pane-meta">disabled</span>
-        </div>
-        <div className="kv-cache-empty">
-          baseline keeps no persistent kv memory and recomputes the prefix every decode step
-        </div>
-      </section>
-    );
-  }
-
-  const displayCapacity = run.replayCapacity;
-  const filled = Math.min(step.cacheLen, displayCapacity);
-  const laneCells = Array.from({ length: displayCapacity }, (_, index) => index < filled);
-
-  return (
-    <section className="kv-pane">
-      <div className="kv-pane-header">
-        <span className="kv-pane-title">kv cache</span>
-        <span className="kv-pane-meta">{run.cacheMode}</span>
-      </div>
-      <div className={`kv-cache-stack cache-${run.cacheMode}`}>
-        {Array.from({ length: run.nLayer }, (_, layer) => (
-          <div className="kv-cache-layer" key={layer}>
-            <div className="kv-cache-label">L{layer + 1}</div>
-            <div className="kv-cache-lane-wrap">
-              {(['K', 'V'] as const).map(kind => (
-                <div className="kv-cache-lane-row" key={kind}>
-                  <span className="kv-cache-kind">{kind}</span>
-                  <div className="kv-cache-lane">
-                    {laneCells.map((isFilled, index) => (
-                      <div
-                        key={`${layer}-${kind}-${index}`}
-                        className={`kv-cache-cell${isFilled ? ' is-filled' : ''}`}
-                        title={`layer ${layer + 1}, ${kind}, token ${index + 1}, dtype=${run.cacheMode}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function MetricsSection({ run, step }: { run: RunTrace; step: StepTrace }) {
   const cards = [
     { label: 'Total', value: formatMs(run.totalMs) },
@@ -176,22 +69,152 @@ function MetricsSection({ run, step }: { run: RunTrace; step: StepTrace }) {
   );
 }
 
+function DecodeFlowPane({
+  run,
+  step,
+  previousStep,
+}: {
+  run: RunTrace;
+  step: StepTrace;
+  previousStep: StepTrace | null;
+}) {
+  const previousCacheLen = previousStep?.cacheLen ?? 0;
+  const tokenOrdinal = step.focusIndex + 1;
+  const headline = step.phase === 'prefill'
+    ? `prompt prefill complete`
+    : `token ${tokenOrdinal} gets processed`;
+  const leftLabel = step.phase === 'prefill'
+    ? `${step.seqLen} prompt tokens`
+    : `token ${tokenOrdinal}`;
+  const rightLabel = run.cacheMode === 'none'
+    ? 'recompute prefix'
+    : 'append new K/V entry';
+  const cacheLine = run.cacheMode === 'none'
+    ? 'cache stays disabled in baseline mode'
+    : `cache length ${previousCacheLen} → ${step.cacheLen}`;
+
+  return (
+    <section className="kv-pane">
+      <div className="kv-pane-header">
+        <span className="kv-pane-title">decode step</span>
+        <span className="kv-pane-meta">
+          {step.phase === 'prefill' ? 'prefill' : `step ${step.stepIndex}`}
+        </span>
+      </div>
+
+      <div className="kv-flow-headline">{headline}</div>
+
+      <div className="kv-flow-strip">
+        <div className="kv-flow-node">{leftLabel}</div>
+        <div className="kv-flow-arrow">→</div>
+        <div className="kv-flow-node is-action">{rightLabel}</div>
+      </div>
+
+      <div className="kv-flow-detail">{cacheLine}</div>
+      <div className="kv-flow-note">{step.note}</div>
+    </section>
+  );
+}
+
+function MemorySquarePane({
+  run,
+  step,
+  previousStep,
+}: {
+  run: RunTrace;
+  step: StepTrace;
+  previousStep: StepTrace | null;
+}) {
+  if (run.cacheMode === 'none') {
+    return (
+      <section className="kv-pane">
+        <div className="kv-pane-header">
+          <span className="kv-pane-title">kv memory</span>
+          <span className="kv-pane-meta">disabled</span>
+        </div>
+        <div className="kv-memory-empty">
+          baseline keeps no persistent kv allocation, so the memory square stays empty.
+        </div>
+      </section>
+    );
+  }
+
+  const previousBytes = previousStep?.cacheBytesUsed ?? 0;
+  const previousCacheLen = previousStep?.cacheLen ?? 0;
+  const fillRatio = run.cacheBytesCapacity > 0
+    ? step.cacheBytesUsed / run.cacheBytesCapacity
+    : 0;
+  const filledCells = Math.max(0, Math.min(
+    MEMORY_GRID_CELLS,
+    Math.round(fillRatio * MEMORY_GRID_CELLS),
+  ));
+
+  return (
+    <section className="kv-pane">
+      <div className="kv-pane-header">
+        <span className="kv-pane-title">kv memory</span>
+        <span className="kv-pane-meta">{run.cacheMode}</span>
+      </div>
+
+      <div className="kv-memory-metrics">
+        <div className="kv-memory-stat">
+          <span className="kv-memory-label">cache length</span>
+          <span className="kv-memory-value">{previousCacheLen} → {step.cacheLen}</span>
+        </div>
+        <div className="kv-memory-stat">
+          <span className="kv-memory-label">memory</span>
+          <span className="kv-memory-value">
+            {formatBytes(previousBytes)} → {formatBytes(step.cacheBytesUsed)}
+          </span>
+        </div>
+      </div>
+
+      <div
+        className="kv-memory-square"
+        style={{ gridTemplateColumns: `repeat(${MEMORY_GRID_SIZE}, minmax(0, 1fr))` }}
+      >
+        {Array.from({ length: MEMORY_GRID_CELLS }, (_, index) => (
+          <div
+            key={index}
+            className={`kv-memory-cell${index < filledCells ? ' is-filled' : ''}`}
+          />
+        ))}
+      </div>
+
+      <div className="kv-memory-caption">
+        {formatBytes(step.cacheBytesUsed)} of {formatBytes(run.cacheBytesCapacity)}
+      </div>
+    </section>
+  );
+}
+
 export default function KvCacheDemo() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [progress, setProgress] = useState({ loaded: 0, total: 0, label: '' });
   const [error, setError] = useState('');
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
-  const [maxNewTokens, setMaxNewTokens] = useState(DEFAULT_TOKENS);
   const [temperature, setTemperature] = useState(DEFAULT_TEMPERATURE);
-  const [selectedMode, setSelectedMode] = useState<BenchmarkMode>('kv-fp32');
-  const [suite, setSuite] = useState<BenchmarkSuite | null>(null);
-  const [replayStep, setReplayStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [kvCacheEnabled, setKvCacheEnabled] = useState(true);
+  const [kvQuantEnabled, setKvQuantEnabled] = useState(false);
+  const [run, setRun] = useState<RunTrace | null>(null);
+  const [visibleStep, setVisibleStep] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const modelRef = useRef<ReturnType<typeof loadReplayModel> | null>(null);
   const tokenizerRef = useRef<BPETokenizer | null>(null);
+  const autoRerunReadyRef = useRef(false);
+  const autoRerunParamsRef = useRef({
+    prompt: DEFAULT_PROMPT,
+    temperature: DEFAULT_TEMPERATURE,
+    mode: 'kv-fp32' as BenchmarkMode,
+  });
 
-  const isRunning = phase === 'running';
+  const isBenchmarkRunning = phase === 'running';
+  const selectedMode: BenchmarkMode = !kvCacheEnabled
+    ? 'baseline'
+    : kvQuantEnabled
+      ? 'kv-int8'
+      : 'kv-fp32';
 
   const loadArtifacts = useCallback(async () => {
     setPhase('downloading');
@@ -242,27 +265,40 @@ export default function KvCacheDemo() {
     modelRef.current = loadReplayModel(checkpoint, tokenizer);
   }, []);
 
-  const runBenchmarks = useCallback(async () => {
+  const runSelectedMode = useCallback(async () => {
     const model = modelRef.current;
     const tokenizer = tokenizerRef.current;
     if (!model || !tokenizer) throw new Error('model is not loaded yet');
 
-    setIsPlaying(false);
-    setReplayStep(0);
-    setPhase('running');
-    setProgress({ loaded: 0, total: maxNewTokens, label: 'Running baseline prefill...' });
+    const promptTokens = tokenizer.encode(prompt);
+    const maxNewTokens = Math.min(
+      MAX_GENERATED_TOKENS,
+      Math.max(0, model.config.blockSize - promptTokens.length),
+    );
+    if (maxNewTokens <= 0) {
+      throw new Error(`prompt is too long for this ${model.config.blockSize}-token context window`);
+    }
 
-    const nextSuite = await runBenchmarkSuite(model, tokenizer, {
+    setIsGenerating(false);
+    setVisibleStep(0);
+    setPhase('running');
+    setProgress({ loaded: 0, total: maxNewTokens, label: `Running ${selectedMode} prefill...` });
+
+    const nextRun = await runBenchmarkMode(model, tokenizer, {
+      mode: selectedMode,
       prompt,
       maxNewTokens,
       temperature,
       onProgress: setProgress,
     });
 
-    setSuite(nextSuite);
-    setReplayStep(0);
+    autoRerunReadyRef.current = true;
+    autoRerunParamsRef.current = { prompt, temperature, mode: selectedMode };
+    setRun(nextRun);
+    setVisibleStep(0);
     setPhase('ready');
-  }, [maxNewTokens, prompt, temperature]);
+    setIsGenerating(true);
+  }, [prompt, selectedMode, temperature]);
 
   const handleLoadAndRun = useCallback(async () => {
     try {
@@ -270,46 +306,68 @@ export default function KvCacheDemo() {
       if (!modelRef.current || !tokenizerRef.current) {
         await loadArtifacts();
       }
-      await runBenchmarks();
+      await runSelectedMode();
     } catch (err: any) {
       setError(err?.message || 'Unknown error');
       setPhase('error');
     }
-  }, [loadArtifacts, runBenchmarks]);
+  }, [loadArtifacts, runSelectedMode]);
 
   useEffect(() => {
-    if (!suite || !isPlaying) return undefined;
-    const run = suite.runs[selectedMode];
+    if (!run || !isGenerating) return undefined;
     const maxStep = run.steps.length - 1;
-    if (replayStep >= maxStep) {
-      setIsPlaying(false);
+    if (visibleStep >= maxStep) {
+      setIsGenerating(false);
       return undefined;
     }
+    const nextStep = run.steps[Math.min(visibleStep + 1, maxStep)];
+    const delay = Math.max(45, Math.min(220, Math.round(nextStep.stepMs * 1.4)));
     const timer = window.setTimeout(() => {
-      setReplayStep(current => Math.min(current + 1, maxStep));
-    }, 650);
+      setVisibleStep(current => Math.min(current + 1, maxStep));
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [isPlaying, replayStep, selectedMode, suite]);
+  }, [isGenerating, run, visibleStep]);
 
-  const selectedRun = suite?.runs[selectedMode] ?? null;
-  const selectedStep = selectedRun?.steps[replayStep] ?? null;
+  useEffect(() => {
+    if (!autoRerunReadyRef.current) return undefined;
+    if (
+      prompt === autoRerunParamsRef.current.prompt
+      && temperature === autoRerunParamsRef.current.temperature
+      && selectedMode === autoRerunParamsRef.current.mode
+    ) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      runSelectedMode().catch((err: any) => {
+        setError(err?.message || 'Unknown error');
+        setPhase('error');
+      });
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [prompt, runSelectedMode, selectedMode, temperature]);
+
+  const visibleRun = run;
+  const visibleStepTrace = visibleRun?.steps[visibleStep] ?? null;
+  const previousStepTrace = visibleRun && visibleStep > 0
+    ? visibleRun.steps[visibleStep - 1]
+    : null;
 
   return (
     <div className="kv-root">
       <div className="kv-header">
-        <h1 className="kv-title">KV Cache Replay</h1>
+        <h1 className="kv-title">KV Cache Demo</h1>
         <p className="kv-desc">
-          Replay the same transformer run three ways: baseline recomputation, KV cache with fp32
-          storage, and KV cache with int8 storage. The browser measures the run, then replays the
-          work and memory story one step at a time.
+          A 12M-parameter target LLM run with baseline recomputation, fp32 KV cache, or int8 KV
+          cache, entirely in your browser using <a href="https://github.com/mni-ml/framework">@mni-ml/framework</a>.
         </p>
       </div>
 
       {phase === 'idle' && (
         <div className="kv-card">
           <p className="kv-muted">
-            This demo downloads the 12M transformer checkpoint (~250 MB), runs the benchmark in your
-            browser, and replays prefill plus decode step by step.
+            This demo downloads the transformer checkpoint (~250 MB), runs the selected decode path,
+            and then animates token-by-token generation until it reaches the model limit or you stop it.
           </p>
           <button type="button" onClick={handleLoadAndRun} className="kv-btn">
             load model and start
@@ -317,7 +375,7 @@ export default function KvCacheDemo() {
         </div>
       )}
 
-      {(phase === 'downloading' || phase === 'parsing' || (phase === 'running' && !suite)) && (
+      {(phase === 'downloading' || phase === 'parsing' || (phase === 'running' && !visibleRun)) && (
         <div className="kv-card">
           <div className="kv-muted">{progress.label}</div>
           <div className="kv-progress-track">
@@ -356,7 +414,7 @@ export default function KvCacheDemo() {
         </div>
       )}
 
-      {(suite || phase === 'running') && (
+      {(visibleRun || phase === 'running') && (
         <>
           <div className="kv-section">
             <div className="kv-label" style={{ marginBottom: 8 }}>
@@ -366,98 +424,86 @@ export default function KvCacheDemo() {
               className="kv-prompt"
               value={prompt}
               onChange={event => setPrompt(event.target.value)}
-              disabled={isRunning}
+              disabled={isBenchmarkRunning}
               rows={2}
               spellCheck={false}
             />
           </div>
 
           <div className="kv-section kv-controls">
-            <div className="kv-control-group">
-              <span className="kv-control-label">mode</span>
-              <div className="kv-mode-group">
-                {MODE_ORDER.map(mode => (
-                  <button
-                    type="button"
-                    key={mode}
-                    className={`kv-mode-btn${selectedMode === mode ? ' is-active' : ''}`}
-                    onClick={() => {
-                      setSelectedMode(mode);
-                      setReplayStep(0);
-                      setIsPlaying(false);
+            <div className="kv-controls-main">
+              <div className="kv-toggle-group">
+                <label className="kv-toggle">
+                  <input
+                    type="checkbox"
+                    checked={kvCacheEnabled}
+                    onChange={event => {
+                      const enabled = event.target.checked;
+                      setKvCacheEnabled(enabled);
+                      if (!enabled) setKvQuantEnabled(false);
+                      setIsGenerating(false);
+                      setVisibleStep(0);
                     }}
-                  >
-                    {modeLabel(mode)}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    disabled={isBenchmarkRunning}
+                  />
+                  <span>kv cache optimization</span>
+                </label>
 
-            <div className="kv-control-group">
-              <span className="kv-control-label">generated tokens</span>
-              <div className="kv-chip-row">
-                {TOKEN_OPTIONS.map(value => (
-                  <button
-                    type="button"
-                    key={value}
-                    className={`kv-chip${maxNewTokens === value ? ' is-active' : ''}`}
-                    onClick={() => setMaxNewTokens(value)}
-                    disabled={isRunning}
-                  >
-                    {value}
-                  </button>
-                ))}
+                <label className="kv-toggle">
+                  <input
+                    type="checkbox"
+                    checked={kvQuantEnabled}
+                    onChange={event => {
+                      const enabled = event.target.checked;
+                      setKvQuantEnabled(enabled);
+                      if (enabled) setKvCacheEnabled(true);
+                      setIsGenerating(false);
+                      setVisibleStep(0);
+                    }}
+                    disabled={isBenchmarkRunning}
+                  />
+                  <span>kv quantization</span>
+                </label>
               </div>
-            </div>
 
-            <div className="kv-slider-wrap">
-              <span className="kv-slider-label">
-                Temperature:{' '}
-                <span className="kv-slider-value">
-                  {temperature.toFixed(2)}
+              <div className="kv-slider-wrap">
+                <span className="kv-slider-label">
+                  Temperature:{' '}
+                  <span className="kv-slider-value">
+                    {temperature.toFixed(2)}
+                  </span>
                 </span>
-              </span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={temperature}
-                onChange={event => setTemperature(parseFloat(event.target.value))}
-                disabled={isRunning}
-                className="kv-slider"
-              />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={temperature}
+                  onChange={event => setTemperature(parseFloat(event.target.value))}
+                  disabled={isBenchmarkRunning}
+                  className="kv-slider"
+                />
+              </div>
             </div>
-
-            <button
-              type="button"
-              onClick={handleLoadAndRun}
-              className="kv-btn kv-btn-primary"
-              disabled={!prompt.trim() || isRunning}
-            >
-              {isRunning ? 'running…' : 'run benchmark'}
-            </button>
           </div>
 
-          {isRunning && suite && (
-            <div className="kv-status">
-              {progress.label}
-            </div>
+          {isBenchmarkRunning && (
+            <div className="kv-status">{progress.label}</div>
           )}
 
-          {suite && selectedRun && selectedStep && (
+          {visibleRun && visibleStepTrace && (
             <>
               <div className="kv-section">
                 <div className="kv-label" style={{ marginBottom: 8 }}>
                   Output
                 </div>
                 <div className="kv-output">
-                  {selectedStep.tokens.map((token, index) => (
+                  {visibleStepTrace.tokens.map((token, index) => (
                     <span
                       key={`${token.id}-${index}`}
                       className={[
                         token.isPrompt ? 'kv-token-prompt' : 'kv-token-gen',
-                        index === selectedStep.focusIndex ? 'kv-token-focus' : '',
+                        index === visibleStepTrace.focusIndex ? 'kv-token-focus' : '',
                       ].join(' ').trim()}
                       title={`token ${token.id}`}
                     >
@@ -471,82 +517,45 @@ export default function KvCacheDemo() {
                 <div className="kv-label" style={{ marginBottom: 8 }}>
                   Metrics
                 </div>
-                <MetricsSection run={selectedRun} step={selectedStep} />
+                <MetricsSection run={visibleRun} step={visibleStepTrace} />
               </div>
 
               <div className="kv-section">
-                <div className="kv-label" style={{ marginBottom: 8 }}>
-                  Replay
-                </div>
-                <div className="kv-replay-toolbar">
-                  <div className="kv-replay-buttons">
-                    <button
-                      type="button"
-                      className="kv-btn"
-                      onClick={() => {
-                        setIsPlaying(false);
-                        setReplayStep(0);
-                      }}
-                    >
-                      reset
-                    </button>
-                    <button
-                      type="button"
-                      className="kv-btn"
-                      onClick={() => {
-                        setIsPlaying(false);
-                        setReplayStep(step => Math.max(step - 1, 0));
-                      }}
-                    >
-                      prev
-                    </button>
-                    <button
-                      type="button"
-                      className="kv-btn"
-                      onClick={() => setIsPlaying(value => !value)}
-                    >
-                      {isPlaying ? 'pause' : 'play'}
-                    </button>
-                    <button
-                      type="button"
-                      className="kv-btn"
-                      onClick={() => {
-                        setIsPlaying(false);
-                        setReplayStep(step => Math.min(step + 1, selectedRun.steps.length - 1));
-                      }}
-                    >
-                      next
-                    </button>
-                  </div>
+                <div className="kv-generate-toolbar">
+                  <button
+                    type="button"
+                    className="kv-btn"
+                    onClick={() => {
+                      if (!isGenerating && visibleStep >= visibleRun.steps.length - 1) {
+                        setVisibleStep(0);
+                      }
+                      setIsGenerating(value => !value);
+                    }}
+                  >
+                    {isGenerating ? 'stop' : 'generate'}
+                  </button>
 
-                  <div className="kv-slider-wrap kv-slider-wrap-wide">
-                    <span className="kv-slider-label">
-                      Position:{' '}
-                      <span className="kv-slider-value">
-                        {formatReplayValue(selectedStep)}
-                      </span>
+                  <div className="kv-progress-inline">
+                    <span className="kv-progress-copy">
+                      {visibleStepTrace.phase === 'prefill'
+                        ? 'prefill'
+                        : `${visibleStep}/${visibleRun.generatedTokens} generated`}
                     </span>
-                    <input
-                      type="range"
-                      min="0"
-                      max={selectedRun.steps.length - 1}
-                      step="1"
-                      value={replayStep}
-                      onChange={event => {
-                        setIsPlaying(false);
-                        setReplayStep(parseInt(event.target.value, 10));
-                      }}
-                      className="kv-slider kv-slider-wide"
-                    />
                   </div>
                 </div>
-
-                <div className="kv-live-note">{selectedStep.note}</div>
               </div>
 
               <div className="kv-stage-grid">
-                <MatrixPane run={selectedRun} step={selectedStep} />
-                <CachePane run={selectedRun} step={selectedStep} />
+                <DecodeFlowPane
+                  run={visibleRun}
+                  step={visibleStepTrace}
+                  previousStep={previousStepTrace}
+                />
+                <MemorySquarePane
+                  run={visibleRun}
+                  step={visibleStepTrace}
+                  previousStep={previousStepTrace}
+                />
               </div>
             </>
           )}
@@ -555,7 +564,7 @@ export default function KvCacheDemo() {
 
       <style>{`
         .kv-root {
-          max-width: var(--content-width);
+          max-width: 48rem;
           margin: 0 auto;
           padding: 36px 48px;
         }
@@ -578,6 +587,16 @@ export default function KvCacheDemo() {
           color: var(--muted);
           margin: 0;
           line-height: 1.75;
+        }
+
+        .kv-desc a {
+          color: var(--acc);
+          text-decoration: none;
+        }
+
+        .kv-desc a:hover {
+          text-decoration: underline;
+          text-underline-offset: 3px;
         }
 
         .kv-card,
@@ -611,9 +630,7 @@ export default function KvCacheDemo() {
           margin-bottom: 14px;
         }
 
-        .kv-btn,
-        .kv-mode-btn,
-        .kv-chip {
+        .kv-btn {
           font-family: var(--font-mono);
           font-size: 11px;
           color: var(--muted);
@@ -625,29 +642,14 @@ export default function KvCacheDemo() {
           transition: color 0.2s, border-color 0.2s, background 0.2s;
         }
 
-        .kv-btn:hover,
-        .kv-mode-btn:hover,
-        .kv-chip:hover {
-          color: var(--acc);
-          border-color: var(--acc);
-        }
-
-        .kv-btn:disabled,
-        .kv-chip:disabled {
+        .kv-btn:disabled {
           opacity: 0.4;
           cursor: not-allowed;
         }
 
-        .kv-btn-primary,
-        .kv-mode-btn.is-active,
-        .kv-chip.is-active {
+        .kv-btn:hover {
           color: var(--acc);
           border-color: var(--acc);
-        }
-
-        .kv-mode-btn.is-active,
-        .kv-chip.is-active {
-          background: rgba(56, 189, 248, 0.08);
         }
 
         .kv-progress-track {
@@ -676,8 +678,8 @@ export default function KvCacheDemo() {
         }
 
         .kv-label,
-        .kv-control-label,
-        .kv-metric-label {
+        .kv-metric-label,
+        .kv-memory-label {
           font-size: 10px;
           color: var(--muted);
           text-transform: uppercase;
@@ -703,24 +705,36 @@ export default function KvCacheDemo() {
         }
 
         .kv-controls {
+          display: grid;
+          gap: 12px;
+        }
+
+        .kv-controls-main {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
           gap: 18px;
         }
 
-        .kv-control-group {
+        .kv-toggle-group {
           display: grid;
           gap: 6px;
+          min-width: 9.5rem;
         }
 
-        .kv-mode-group,
-        .kv-chip-row,
-        .kv-replay-buttons {
+        .kv-toggle {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          flex-wrap: wrap;
+          font-size: 12px;
+          color: var(--txt);
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .kv-toggle input {
+          margin: 0;
+          accent-color: var(--acc);
         }
 
         .kv-slider-wrap {
@@ -730,11 +744,6 @@ export default function KvCacheDemo() {
           font-size: 12px;
           color: var(--muted);
           flex-wrap: wrap;
-        }
-
-        .kv-slider-wrap-wide {
-          flex: 1 1 20rem;
-          justify-content: space-between;
         }
 
         .kv-slider-label {
@@ -760,10 +769,6 @@ export default function KvCacheDemo() {
           cursor: pointer;
           margin: 0;
           padding: 0;
-        }
-
-        .kv-slider-wide {
-          width: min(100%, 420px);
         }
 
         .kv-slider:disabled {
@@ -864,18 +869,20 @@ export default function KvCacheDemo() {
           margin-top: 4px;
         }
 
-        .kv-replay-toolbar {
+        .kv-generate-toolbar {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 18px;
-          margin-bottom: 12px;
+          gap: 16px;
         }
 
-        .kv-live-note {
-          font-size: 12px;
+        .kv-progress-inline {
           color: var(--muted);
-          line-height: 1.7;
+          font-size: 12px;
+        }
+
+        .kv-progress-copy {
+          font-family: var(--font-mono);
         }
 
         .kv-stage-grid {
@@ -899,94 +906,99 @@ export default function KvCacheDemo() {
           color: var(--txt);
         }
 
-        .kv-pane-meta,
-        .kv-cache-label,
-        .kv-cache-kind {
+        .kv-pane-meta {
           color: var(--muted);
           font-size: 11px;
         }
 
-        .kv-matrix {
+        .kv-flow-headline {
+          color: var(--txt);
+          margin-bottom: 12px;
+          font-size: 14px;
+        }
+
+        .kv-flow-strip {
           display: grid;
-          gap: 2px;
-          aspect-ratio: 1;
-        }
-
-        .kv-matrix-cell {
-          border-radius: 2px;
-          background: rgba(26, 37, 53, 0.6);
-        }
-
-        .kv-matrix-cell.is-empty {
-          background: transparent;
-          border: 0.5px solid rgba(26, 37, 53, 0.35);
-        }
-
-        .kv-matrix-cell.is-active {
-          background: rgba(56, 189, 248, 0.28);
-        }
-
-        .kv-matrix-cell.is-history {
-          background: rgba(56, 189, 248, 0.1);
-        }
-
-        .kv-matrix-cell.is-focus {
-          background: rgba(56, 189, 248, 0.78);
-        }
-
-        .kv-cache-empty {
-          min-height: 12rem;
-          display: flex;
-          align-items: center;
-          color: var(--muted);
-          line-height: 1.8;
-        }
-
-        .kv-cache-stack {
-          display: grid;
-          gap: 8px;
-        }
-
-        .kv-cache-layer {
-          display: grid;
-          grid-template-columns: 2rem minmax(0, 1fr);
+          grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
           gap: 10px;
-          align-items: start;
-        }
-
-        .kv-cache-lane-wrap {
-          display: grid;
-          gap: 6px;
-        }
-
-        .kv-cache-lane-row {
-          display: grid;
-          grid-template-columns: 1rem minmax(0, 1fr);
-          gap: 8px;
           align-items: center;
+          margin-bottom: 12px;
         }
 
-        .kv-cache-lane {
+        .kv-flow-node {
+          border: 0.5px solid var(--bdr);
+          border-radius: 6px;
+          padding: 12px 10px;
+          color: var(--txt);
+          text-align: center;
+          min-height: 3.5rem;
           display: flex;
-          gap: 2px;
-          flex-wrap: nowrap;
-          overflow: hidden;
+          align-items: center;
+          justify-content: center;
         }
 
-        .kv-cache-cell {
-          flex: 0 0 8px;
-          height: 8px;
+        .kv-flow-node.is-action {
+          background: rgba(56, 189, 248, 0.08);
+          border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .kv-flow-arrow {
+          color: var(--acc);
+          font-size: 16px;
+        }
+
+        .kv-flow-detail,
+        .kv-flow-note {
+          color: var(--muted);
+          font-size: 12px;
+        }
+
+        .kv-flow-detail {
+          margin-bottom: 6px;
+        }
+
+        .kv-memory-metrics {
+          display: grid;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .kv-memory-stat {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: baseline;
+        }
+
+        .kv-memory-value {
+          color: var(--txt);
+          font-size: 12px;
+        }
+
+        .kv-memory-square {
+          display: grid;
+          gap: 3px;
+          aspect-ratio: 1;
+          margin-bottom: 10px;
+        }
+
+        .kv-memory-cell {
           border-radius: 2px;
           border: 0.5px solid rgba(26, 37, 53, 0.9);
           background: transparent;
+          transition: background 0.16s ease, border-color 0.16s ease;
         }
 
-        .cache-int8 .kv-cache-cell {
-          flex-basis: 4px;
-        }
-
-        .kv-cache-cell.is-filled {
+        .kv-memory-cell.is-filled {
           background: rgba(56, 189, 248, 0.45);
+          border-color: rgba(56, 189, 248, 0.26);
+        }
+
+        .kv-memory-caption,
+        .kv-memory-empty {
+          color: var(--muted);
+          font-size: 12px;
+          line-height: 1.7;
         }
 
         @keyframes kv-pulse {
@@ -999,25 +1011,22 @@ export default function KvCacheDemo() {
             padding: 24px 16px;
           }
 
-          .kv-controls,
-          .kv-replay-toolbar {
+          .kv-controls-main,
+          .kv-stage-grid,
+          .kv-flow-strip,
+          .kv-generate-toolbar {
+            grid-template-columns: 1fr;
             flex-direction: column;
             align-items: stretch;
-            gap: 12px;
           }
 
-          .kv-slider,
-          .kv-slider-wide {
+          .kv-slider {
             width: 100%;
           }
 
-          .kv-slider-wrap-wide {
-            display: grid;
-            gap: 8px;
-          }
-
-          .kv-stage-grid {
-            grid-template-columns: 1fr;
+          .kv-memory-stat {
+            flex-direction: column;
+            gap: 4px;
           }
         }
       `}</style>
