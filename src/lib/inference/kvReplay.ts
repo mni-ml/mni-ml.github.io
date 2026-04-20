@@ -529,7 +529,9 @@ class ReplayMiniGPT extends Module {
 }
 
 export function loadReplayModel(checkpoint: CheckpointData, tokenizer: BPETokenizer): ReplayMiniGPT {
-  const model = new ReplayMiniGPT(tokenizer.vocabSize, checkpoint.config);
+  const vocabSize = checkpoint.parameters['tokenEmb.weight']?.shape[0]
+    ?? tokenizer.vocabSize;
+  const model = new ReplayMiniGPT(vocabSize, checkpoint.config);
   for (const [name, param] of model.namedParameters()) {
     const saved = checkpoint.parameters[name];
     if (!saved) continue;
@@ -627,7 +629,7 @@ async function runBaselineTrace(
     await yieldToBrowser();
 
     for (let step = 0; step < maxNewTokens; step++) {
-      const nextToken = sampleNextToken(logits, tokenizer.vocabSize, temperature);
+      const nextToken = sampleNextToken(logits, model.vocabSize, temperature);
       context.push(nextToken);
       const decodeStart = performance.now();
       logits = model.forward([context]);
@@ -736,7 +738,7 @@ async function runKvTrace(
     }
 
     for (let step = 0; step < maxNewTokens; step++) {
-      const nextToken = sampleNextToken(logits, tokenizer.vocabSize, temperature);
+      const nextToken = sampleNextToken(logits, model.vocabSize, temperature);
       context.push(nextToken);
       const decodeStart = performance.now();
       logits = model.forwardToken(nextToken, promptIds.length + step, caches);
