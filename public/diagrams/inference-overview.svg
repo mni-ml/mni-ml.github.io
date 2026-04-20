@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 220" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .phase { fill: none; stroke: #1a2535; stroke-width: 0.5; stroke-dasharray: 4 2; rx: 8; }
+    .line { stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a); }
+    .tag { font-size: 7px; fill: #38bdf8; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 5 2, 0 4" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <!-- Prefill phase region -->
+  <rect class="phase" x="80" y="20" width="200" height="180" />
+  <text class="heading" x="180" y="14" text-anchor="middle">PREFILL</text>
+
+  <!-- Decode phase region -->
+  <rect class="phase" x="320" y="20" width="200" height="180" />
+  <text class="heading" x="420" y="14" text-anchor="middle">DECODE</text>
+
+  <!-- Input prompt -->
+  <rect class="box" x="4" y="85" width="56" height="36" />
+  <text class="label" x="32" y="103" text-anchor="middle">prompt</text>
+  <text class="sub" x="32" y="115" text-anchor="middle">n tokens</text>
+
+  <!-- Arrow into prefill -->
+  <line class="line" x1="62" y1="103" x2="98" y2="103" />
+
+  <!-- Process all tokens -->
+  <rect class="box" x="100" y="55" width="160" height="36" />
+  <text class="label" x="180" y="73" text-anchor="middle">Process All Tokens</text>
+  <text class="sub" x="180" y="85" text-anchor="middle">parallel</text>
+
+  <line class="line" x1="180" y1="91" x2="180" y2="123" />
+
+  <!-- KV Cache -->
+  <rect class="box" x="100" y="125" width="160" height="36" />
+  <text class="label" x="180" y="143" text-anchor="middle">Generate KV Cache</text>
+  <text class="sub" x="180" y="155" text-anchor="middle">stored in VRAM</text>
+
+  <!-- Arrow to decode -->
+  <line class="line" x1="262" y1="143" x2="338" y2="88" />
+
+  <!-- Predict next token -->
+  <rect class="box" x="340" y="55" width="160" height="36" />
+  <text class="label" x="420" y="73" text-anchor="middle">Predict Next Token</text>
+  <text class="sub" x="420" y="85" text-anchor="middle">sequential</text>
+
+  <!-- Loop arrow -->
+  <path d="M 420 91 L 420 120 Q 420 130 430 130 L 510 130 Q 520 130 520 120 L 520 73 Q 520 63 510 63 L 502 63" style="stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a);" />
+  <text class="sub" x="470" y="145" text-anchor="middle">append to</text>
+  <text class="sub" x="470" y="155" text-anchor="middle">KV cache</text>
+
+  <!-- Output -->
+  <rect class="box" x="340" y="165" width="160" height="30" />
+  <text class="label" x="420" y="184" text-anchor="middle">Output Sequence</text>
+
+  <line class="line" x1="420" y1="130" x2="420" y2="163" />
+
+  <!-- Bottleneck tags -->
+  <text class="tag" x="180" y="178" text-anchor="middle">compute-bound (FLOPS)</text>
+  <text class="tag" x="420" y="46" text-anchor="middle">memory-bound (bandwidth)</text>
+</svg>

@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 240" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 4; }
+    .q { fill: #38bdf8; opacity: 0.35; stroke: #38bdf8; stroke-width: 0.5; rx: 3; }
+    .kv { fill: #38bdf8; opacity: 0.7; stroke: #38bdf8; stroke-width: 0.5; rx: 3; }
+    .line { stroke: #38bdf8; stroke-width: 0.6; fill: none; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+  </style>
+
+  <!-- ===== MHA ===== -->
+  <text class="heading" x="90" y="16" text-anchor="middle">MULTI-HEAD (MHA)</text>
+
+  <!-- Q heads -->
+  <text class="sub" x="22" y="44">Q</text>
+  <rect class="q" x="36" y="32" width="24" height="20" />
+  <rect class="q" x="64" y="32" width="24" height="20" />
+  <rect class="q" x="92" y="32" width="24" height="20" />
+  <rect class="q" x="120" y="32" width="24" height="20" />
+  <text class="sub" x="48" y="46" text-anchor="middle">Q₁</text>
+  <text class="sub" x="76" y="46" text-anchor="middle">Q₂</text>
+  <text class="sub" x="104" y="46" text-anchor="middle">Q₃</text>
+  <text class="sub" x="132" y="46" text-anchor="middle">Q₄</text>
+
+  <!-- Lines connecting each Q to its own KV -->
+  <line class="line" x1="48" y1="52" x2="48" y2="70" />
+  <line class="line" x1="76" y1="52" x2="76" y2="70" />
+  <line class="line" x1="104" y1="52" x2="104" y2="70" />
+  <line class="line" x1="132" y1="52" x2="132" y2="70" />
+
+  <!-- K heads -->
+  <text class="sub" x="22" y="84">K</text>
+  <rect class="kv" x="36" y="72" width="24" height="20" />
+  <rect class="kv" x="64" y="72" width="24" height="20" />
+  <rect class="kv" x="92" y="72" width="24" height="20" />
+  <rect class="kv" x="120" y="72" width="24" height="20" />
+  <text class="sub" x="48" y="86" text-anchor="middle">K₁</text>
+  <text class="sub" x="76" y="86" text-anchor="middle">K₂</text>
+  <text class="sub" x="104" y="86" text-anchor="middle">K₃</text>
+  <text class="sub" x="132" y="86" text-anchor="middle">K₄</text>
+
+  <!-- V heads -->
+  <text class="sub" x="22" y="114">V</text>
+  <rect class="kv" x="36" y="102" width="24" height="20" />
+  <rect class="kv" x="64" y="102" width="24" height="20" />
+  <rect class="kv" x="92" y="102" width="24" height="20" />
+  <rect class="kv" x="120" y="102" width="24" height="20" />
+  <text class="sub" x="48" y="116" text-anchor="middle">V₁</text>
+  <text class="sub" x="76" y="116" text-anchor="middle">V₂</text>
+  <text class="sub" x="104" y="116" text-anchor="middle">V₃</text>
+  <text class="sub" x="132" y="116" text-anchor="middle">V₄</text>
+
+  <text class="sub" x="90" y="140" text-anchor="middle">4 Q, 4 KV heads</text>
+  <text class="tag" x="90" y="152" text-anchor="middle">full KV cache</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="170" y1="20" x2="170" y2="160" />
+
+  <!-- ===== MQA ===== -->
+  <text class="heading" x="280" y="16" text-anchor="middle">MULTI-QUERY (MQA)</text>
+
+  <!-- Q heads -->
+  <text class="sub" x="212" y="44">Q</text>
+  <rect class="q" x="226" y="32" width="24" height="20" />
+  <rect class="q" x="254" y="32" width="24" height="20" />
+  <rect class="q" x="282" y="32" width="24" height="20" />
+  <rect class="q" x="310" y="32" width="24" height="20" />
+  <text class="sub" x="238" y="46" text-anchor="middle">Q₁</text>
+  <text class="sub" x="266" y="46" text-anchor="middle">Q₂</text>
+  <text class="sub" x="294" y="46" text-anchor="middle">Q₃</text>
+  <text class="sub" x="322" y="46" text-anchor="middle">Q₄</text>
+
+  <!-- All Q lines converge to single KV -->
+  <line class="line" x1="238" y1="52" x2="280" y2="70" />
+  <line class="line" x1="266" y1="52" x2="280" y2="70" />
+  <line class="line" x1="294" y1="52" x2="280" y2="70" />
+  <line class="line" x1="322" y1="52" x2="280" y2="70" />
+
+  <!-- Single K -->
+  <text class="sub" x="212" y="84">K</text>
+  <rect class="kv" x="264" y="72" width="32" height="20" />
+  <text class="sub" x="280" y="86" text-anchor="middle">K₁</text>
+
+  <!-- Single V -->
+  <text class="sub" x="212" y="114">V</text>
+  <rect class="kv" x="264" y="102" width="32" height="20" />
+  <text class="sub" x="280" y="116" text-anchor="middle">V₁</text>
+
+  <text class="sub" x="280" y="140" text-anchor="middle">4 Q, 1 KV head</text>
+  <text class="tag" x="280" y="152" text-anchor="middle">minimal KV cache</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="360" y1="20" x2="360" y2="160" />
+
+  <!-- ===== GQA ===== -->
+  <text class="heading" x="450" y="16" text-anchor="middle">GROUPED-QUERY (GQA)</text>
+
+  <!-- Q heads -->
+  <text class="sub" x="386" y="44">Q</text>
+  <rect class="q" x="400" y="32" width="24" height="20" />
+  <rect class="q" x="428" y="32" width="24" height="20" />
+  <rect class="q" x="456" y="32" width="24" height="20" />
+  <rect class="q" x="484" y="32" width="24" height="20" />
+  <text class="sub" x="412" y="46" text-anchor="middle">Q₁</text>
+  <text class="sub" x="440" y="46" text-anchor="middle">Q₂</text>
+  <text class="sub" x="468" y="46" text-anchor="middle">Q₃</text>
+  <text class="sub" x="496" y="46" text-anchor="middle">Q₄</text>
+
+  <!-- Group 1: Q1,Q2 → KV1 -->
+  <line class="line" x1="412" y1="52" x2="420" y2="70" />
+  <line class="line" x1="440" y1="52" x2="420" y2="70" />
+
+  <!-- Group 2: Q3,Q4 → KV2 -->
+  <line class="line" x1="468" y1="52" x2="480" y2="70" />
+  <line class="line" x1="496" y1="52" x2="480" y2="70" />
+
+  <!-- K heads (2) -->
+  <text class="sub" x="386" y="84">K</text>
+  <rect class="kv" x="406" y="72" width="28" height="20" />
+  <rect class="kv" x="466" y="72" width="28" height="20" />
+  <text class="sub" x="420" y="86" text-anchor="middle">K₁</text>
+  <text class="sub" x="480" y="86" text-anchor="middle">K₂</text>
+
+  <!-- V heads (2) -->
+  <text class="sub" x="386" y="114">V</text>
+  <rect class="kv" x="406" y="102" width="28" height="20" />
+  <rect class="kv" x="466" y="102" width="28" height="20" />
+  <text class="sub" x="420" y="116" text-anchor="middle">V₁</text>
+  <text class="sub" x="480" y="116" text-anchor="middle">V₂</text>
+
+  <text class="sub" x="450" y="140" text-anchor="middle">4 Q, 2 KV heads</text>
+  <text class="tag" x="450" y="152" text-anchor="middle">balanced tradeoff</text>
+
+  <!-- Bottom summary bar -->
+  <rect x="36" y="170" width="472" height="24" rx="4" fill="#131923" stroke="#1a2535" stroke-width="0.5" />
+  <text class="sub" x="270" y="186" text-anchor="middle">KV cache size:  MHA (full)  &gt;  GQA (reduced)  &gt;  MQA (minimal)</text>
+</svg>

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 260" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 3; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .warn { font-size: 7px; fill: #6b839e; }
+  </style>
+
+  <!-- Contiguous allocation -->
+  <text class="heading" x="260" y="16" text-anchor="middle">CONTIGUOUS ALLOCATION</text>
+
+  <!-- VRAM bar -->
+  <rect x="30" y="28" width="460" height="40" rx="4" fill="#0d1117" stroke="#1a2535" stroke-width="0.5" />
+
+  <!-- Request A (3 blocks) -->
+  <rect x="34" y="32" width="120" height="32" rx="3" fill="#38bdf8" opacity="0.3" />
+  <text class="sub" x="94" y="52" text-anchor="middle">Request A</text>
+
+  <!-- Gap (fragmented) -->
+  <rect x="158" y="32" width="50" height="32" rx="3" fill="#6b839e" opacity="0.08" stroke="#6b839e" stroke-width="0.3" stroke-dasharray="2 2" />
+  <text class="warn" x="183" y="52" text-anchor="middle">free</text>
+
+  <!-- Request B (2 blocks) -->
+  <rect x="212" y="32" width="80" height="32" rx="3" fill="#38bdf8" opacity="0.5" />
+  <text class="sub" x="252" y="52" text-anchor="middle">Request B</text>
+
+  <!-- Gap -->
+  <rect x="296" y="32" width="30" height="32" rx="3" fill="#6b839e" opacity="0.08" stroke="#6b839e" stroke-width="0.3" stroke-dasharray="2 2" />
+
+  <!-- Request C -->
+  <rect x="330" y="32" width="100" height="32" rx="3" fill="#38bdf8" opacity="0.2" />
+  <text class="sub" x="380" y="52" text-anchor="middle">Request C</text>
+
+  <!-- Remaining free -->
+  <rect x="434" y="32" width="52" height="32" rx="3" fill="#6b839e" opacity="0.08" stroke="#6b839e" stroke-width="0.3" stroke-dasharray="2 2" />
+
+  <text class="warn" x="260" y="86" text-anchor="middle">fragmented gaps waste VRAM — large new requests may not fit</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="30" y1="100" x2="490" y2="100" />
+
+  <!-- Paged allocation -->
+  <text class="heading" x="260" y="118" text-anchor="middle">PAGED ALLOCATION</text>
+
+  <!-- VRAM as page grid -->
+  <!-- Row 1 -->
+  <rect x="30" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.3" />
+  <text class="sub" x="57" y="150" text-anchor="middle">A.0</text>
+
+  <rect x="88" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.5" />
+  <text class="sub" x="115" y="150" text-anchor="middle">B.0</text>
+
+  <rect x="146" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.3" />
+  <text class="sub" x="173" y="150" text-anchor="middle">A.1</text>
+
+  <rect x="204" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.2" />
+  <text class="sub" x="231" y="150" text-anchor="middle">C.0</text>
+
+  <rect x="262" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.5" />
+  <text class="sub" x="289" y="150" text-anchor="middle">B.1</text>
+
+  <rect x="320" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.3" />
+  <text class="sub" x="347" y="150" text-anchor="middle">A.2</text>
+
+  <rect x="378" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.2" />
+  <text class="sub" x="405" y="150" text-anchor="middle">C.1</text>
+
+  <rect x="436" y="130" width="54" height="32" rx="3" fill="#38bdf8" opacity="0.2" />
+  <text class="sub" x="463" y="150" text-anchor="middle">C.2</text>
+
+  <!-- Page table -->
+  <text class="heading" x="260" y="182" text-anchor="middle">PAGE TABLE</text>
+
+  <!-- Req A page table -->
+  <rect class="box" x="60" y="192" width="120" height="24" />
+  <text class="sub" x="120" y="208" text-anchor="middle">A → [0, 2, 5]</text>
+
+  <!-- Req B page table -->
+  <rect class="box" x="200" y="192" width="120" height="24" />
+  <text class="sub" x="260" y="208" text-anchor="middle">B → [1, 4]</text>
+
+  <!-- Req C page table -->
+  <rect class="box" x="340" y="192" width="120" height="24" />
+  <text class="sub" x="400" y="208" text-anchor="middle">C → [3, 6, 7]</text>
+
+  <text class="tag" x="260" y="240" text-anchor="middle">no fragmentation — blocks allocated and freed flexibly</text>
+</svg>

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 280" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .warn { font-size: 7px; fill: #6b839e; }
+  </style>
+
+  <!-- Static batching -->
+  <text class="heading" x="240" y="14" text-anchor="middle">STATIC BATCHING</text>
+
+  <!-- Time axis -->
+  <text class="sub" x="110" y="30">t₁</text>
+  <text class="sub" x="170" y="30">t₂</text>
+  <text class="sub" x="230" y="30">t₃</text>
+  <text class="sub" x="290" y="30">t₄</text>
+  <text class="sub" x="350" y="30">t₅</text>
+  <text class="sub" x="410" y="30">t₆</text>
+
+  <!-- Slot labels -->
+  <text class="sub" x="68" y="54" text-anchor="end">slot 0</text>
+  <text class="sub" x="68" y="78" text-anchor="end">slot 1</text>
+  <text class="sub" x="68" y="102" text-anchor="end">slot 2</text>
+
+  <!-- Request A (finishes at t4) -->
+  <rect x="90" y="38" width="220" height="20" rx="3" fill="#38bdf8" opacity="0.3" />
+  <text class="sub" x="200" y="52" text-anchor="middle">Request A</text>
+  <!-- Idle after A finishes -->
+  <rect x="314" y="38" width="120" height="20" rx="3" fill="#6b839e" opacity="0.06" stroke="#6b839e" stroke-width="0.3" stroke-dasharray="2 2" />
+  <text class="warn" x="374" y="52" text-anchor="middle">idle</text>
+
+  <!-- Request B (finishes at t3) -->
+  <rect x="90" y="62" width="160" height="20" rx="3" fill="#38bdf8" opacity="0.5" />
+  <text class="sub" x="170" y="76" text-anchor="middle">Request B</text>
+  <!-- Idle -->
+  <rect x="254" y="62" width="180" height="20" rx="3" fill="#6b839e" opacity="0.06" stroke="#6b839e" stroke-width="0.3" stroke-dasharray="2 2" />
+  <text class="warn" x="344" y="76" text-anchor="middle">idle</text>
+
+  <!-- Request C (finishes at t6) -->
+  <rect x="90" y="86" width="344" height="20" rx="3" fill="#38bdf8" opacity="0.2" />
+  <text class="sub" x="262" y="100" text-anchor="middle">Request C</text>
+
+  <text class="warn" x="260" y="124" text-anchor="middle">batch waits for longest request — GPU underutilized</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="30" y1="138" x2="450" y2="138" />
+
+  <!-- Continuous batching -->
+  <text class="heading" x="240" y="156" text-anchor="middle">CONTINUOUS BATCHING</text>
+
+  <!-- Time axis -->
+  <text class="sub" x="110" y="172">t₁</text>
+  <text class="sub" x="170" y="172">t₂</text>
+  <text class="sub" x="230" y="172">t₃</text>
+  <text class="sub" x="290" y="172">t₄</text>
+  <text class="sub" x="350" y="172">t₅</text>
+  <text class="sub" x="410" y="172">t₆</text>
+
+  <!-- Slot labels -->
+  <text class="sub" x="68" y="196" text-anchor="end">slot 0</text>
+  <text class="sub" x="68" y="220" text-anchor="end">slot 1</text>
+  <text class="sub" x="68" y="244" text-anchor="end">slot 2</text>
+
+  <!-- Request A -->
+  <rect x="90" y="180" width="220" height="20" rx="3" fill="#38bdf8" opacity="0.3" />
+  <text class="sub" x="200" y="194" text-anchor="middle">A</text>
+  <!-- Request E fills slot after A -->
+  <rect x="314" y="180" width="120" height="20" rx="3" fill="#38bdf8" opacity="0.4" />
+  <text class="sub" x="374" y="194" text-anchor="middle">E (new)</text>
+
+  <!-- Request B -->
+  <rect x="90" y="204" width="160" height="20" rx="3" fill="#38bdf8" opacity="0.5" />
+  <text class="sub" x="170" y="218" text-anchor="middle">B</text>
+  <!-- Request D fills slot after B -->
+  <rect x="254" y="204" width="180" height="20" rx="3" fill="#38bdf8" opacity="0.35" />
+  <text class="sub" x="344" y="218" text-anchor="middle">D (new)</text>
+
+  <!-- Request C -->
+  <rect x="90" y="228" width="344" height="20" rx="3" fill="#38bdf8" opacity="0.2" />
+  <text class="sub" x="262" y="242" text-anchor="middle">C</text>
+
+  <text class="tag" x="260" y="268" text-anchor="middle">finished slots immediately reused — GPU stays busy</text>
+</svg>

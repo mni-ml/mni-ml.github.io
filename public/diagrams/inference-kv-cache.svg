@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 280" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 3; }
+    .cached { fill: #38bdf8; opacity: 0.15; stroke: #38bdf8; stroke-width: 0.5; rx: 3; }
+    .new { fill: #38bdf8; opacity: 0.5; stroke: #38bdf8; stroke-width: 0.5; rx: 3; }
+    .recomp { fill: #6b839e; opacity: 0.12; stroke: #6b839e; stroke-width: 0.5; rx: 3; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .warn { font-size: 7px; fill: #6b839e; }
+  </style>
+
+  <!-- Left side: Naive (recompute) -->
+  <text class="heading" x="130" y="16" text-anchor="middle">NAIVE (RECOMPUTE)</text>
+
+  <!-- Step 1: generating token 3 -->
+  <text class="sub" x="16" y="44">step 1</text>
+  <text class="sub" x="16" y="54">token 3</text>
+  <rect class="recomp" x="68" y="34" width="36" height="24" />
+  <rect class="recomp" x="108" y="34" width="36" height="24" />
+  <rect class="new" x="148" y="34" width="36" height="24" />
+  <text class="sub" x="86" y="50" text-anchor="middle">K₁</text>
+  <text class="sub" x="126" y="50" text-anchor="middle">K₂</text>
+  <text class="label" x="166" y="50" text-anchor="middle">K₃</text>
+
+  <!-- Step 2: generating token 4 -->
+  <text class="sub" x="16" y="84">step 2</text>
+  <text class="sub" x="16" y="94">token 4</text>
+  <rect class="recomp" x="68" y="74" width="36" height="24" />
+  <rect class="recomp" x="108" y="74" width="36" height="24" />
+  <rect class="recomp" x="148" y="74" width="36" height="24" />
+  <rect class="new" x="188" y="74" width="36" height="24" />
+  <text class="sub" x="86" y="90" text-anchor="middle">K₁</text>
+  <text class="sub" x="126" y="90" text-anchor="middle">K₂</text>
+  <text class="sub" x="166" y="90" text-anchor="middle">K₃</text>
+  <text class="label" x="206" y="90" text-anchor="middle">K₄</text>
+
+  <!-- Step 3: generating token 5 -->
+  <text class="sub" x="16" y="124">step 3</text>
+  <text class="sub" x="16" y="134">token 5</text>
+  <rect class="recomp" x="68" y="114" width="36" height="24" />
+  <rect class="recomp" x="108" y="114" width="36" height="24" />
+  <rect class="recomp" x="148" y="114" width="36" height="24" />
+  <rect class="recomp" x="188" y="114" width="36" height="24" />
+  <rect class="new" x="228" y="114" width="36" height="24" />
+  <text class="sub" x="86" y="130" text-anchor="middle">K₁</text>
+  <text class="sub" x="126" y="130" text-anchor="middle">K₂</text>
+  <text class="sub" x="166" y="130" text-anchor="middle">K₃</text>
+  <text class="sub" x="206" y="130" text-anchor="middle">K₄</text>
+  <text class="label" x="246" y="130" text-anchor="middle">K₅</text>
+
+  <text class="warn" x="160" y="160" text-anchor="middle">recomputed every step (O(n²))</text>
+
+  <!-- Separator -->
+  <line class="sep" x1="16" y1="175" x2="504" y2="175" />
+
+  <!-- Right side: With KV Cache -->
+  <text class="heading" x="130" y="196" text-anchor="middle">WITH KV CACHE</text>
+
+  <!-- Step 1: generating token 3 -->
+  <text class="sub" x="16" y="224">step 1</text>
+  <text class="sub" x="16" y="234">token 3</text>
+  <rect class="cached" x="68" y="214" width="36" height="24" />
+  <rect class="cached" x="108" y="214" width="36" height="24" />
+  <rect class="new" x="148" y="214" width="36" height="24" />
+  <text class="sub" x="86" y="230" text-anchor="middle">K₁</text>
+  <text class="sub" x="126" y="230" text-anchor="middle">K₂</text>
+  <text class="label" x="166" y="230" text-anchor="middle">K₃</text>
+
+  <!-- Step 2 -->
+  <text class="sub" x="16" y="256">step 2</text>
+  <text class="sub" x="16" y="266">token 4</text>
+  <rect class="cached" x="68" y="248" width="116" height="24" />
+  <rect class="new" x="188" y="248" width="36" height="24" />
+  <text class="tag" x="126" y="264" text-anchor="middle">cached (K₁ K₂ K₃)</text>
+  <text class="label" x="206" y="264" text-anchor="middle">K₄</text>
+
+  <text class="tag" x="160" y="280" text-anchor="middle">only compute new row (O(n))</text>
+</svg>

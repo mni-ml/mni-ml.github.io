@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 240" fill="none">
+  <style>
+    text { font-family: 'IBM Plex Mono', monospace; }
+    .label { font-size: 10px; fill: #dde4ed; }
+    .sub { font-size: 8px; fill: #6b839e; }
+    .heading { font-size: 8px; fill: #6b839e; letter-spacing: 0.06em; }
+    .box { fill: #131923; stroke: #1a2535; stroke-width: 1; rx: 5; }
+    .gpu { fill: #131923; stroke: #38bdf8; stroke-width: 0.8; rx: 6; }
+    .region { fill: none; stroke: #1a2535; stroke-width: 0.5; stroke-dasharray: 4 2; rx: 8; }
+    .line { stroke: #38bdf8; stroke-width: 1; fill: none; marker-end: url(#a); }
+    .transfer { stroke: #38bdf8; stroke-width: 1.2; fill: none; marker-end: url(#a); stroke-dasharray: 6 3; }
+    .tag { font-size: 7px; fill: #38bdf8; }
+    .sep { stroke: #1a2535; stroke-width: 0.5; }
+  </style>
+  <defs>
+    <marker id="a" markerWidth="5" markerHeight="4" refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 5 2, 0 4" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <text class="heading" x="260" y="16" text-anchor="middle">DISAGGREGATED PREFILL AND DECODE</text>
+
+  <!-- Prefill GPU pool -->
+  <rect class="region" x="20" y="30" width="200" height="180" />
+  <text class="heading" x="120" y="46" text-anchor="middle">PREFILL POOL</text>
+  <text class="tag" x="120" y="58" text-anchor="middle">high FLOPS GPUs</text>
+
+  <!-- Prefill GPUs -->
+  <rect class="gpu" x="40" y="70" width="72" height="36" />
+  <text class="label" x="76" y="89" text-anchor="middle">GPU 0</text>
+  <text class="sub" x="76" y="100" text-anchor="middle">prefill</text>
+
+  <rect class="gpu" x="128" y="70" width="72" height="36" />
+  <text class="label" x="164" y="89" text-anchor="middle">GPU 1</text>
+  <text class="sub" x="164" y="100" text-anchor="middle">prefill</text>
+
+  <rect class="gpu" x="40" y="120" width="72" height="36" />
+  <text class="label" x="76" y="139" text-anchor="middle">GPU 2</text>
+  <text class="sub" x="76" y="150" text-anchor="middle">prefill</text>
+
+  <!-- Incoming prompts -->
+  <rect class="box" x="56" y="170" width="108" height="26" />
+  <text class="sub" x="110" y="187" text-anchor="middle">incoming prompts</text>
+
+  <!-- KV cache transfer -->
+  <line class="transfer" x1="222" y1="90" x2="298" y2="90" />
+  <text class="sub" x="260" y="82" text-anchor="middle">KV cache</text>
+  <text class="sub" x="260" y="110" text-anchor="middle">transfer</text>
+
+  <!-- Decode GPU pool -->
+  <rect class="region" x="300" y="30" width="200" height="180" />
+  <text class="heading" x="400" y="46" text-anchor="middle">DECODE POOL</text>
+  <text class="tag" x="400" y="58" text-anchor="middle">high bandwidth GPUs</text>
+
+  <!-- Decode GPUs -->
+  <rect class="gpu" x="320" y="70" width="72" height="36" />
+  <text class="label" x="356" y="89" text-anchor="middle">GPU 3</text>
+  <text class="sub" x="356" y="100" text-anchor="middle">decode</text>
+
+  <rect class="gpu" x="408" y="70" width="72" height="36" />
+  <text class="label" x="444" y="89" text-anchor="middle">GPU 4</text>
+  <text class="sub" x="444" y="100" text-anchor="middle">decode</text>
+
+  <rect class="gpu" x="320" y="120" width="72" height="36" />
+  <text class="label" x="356" y="139" text-anchor="middle">GPU 5</text>
+  <text class="sub" x="356" y="150" text-anchor="middle">decode</text>
+
+  <rect class="gpu" x="408" y="120" width="72" height="36" />
+  <text class="label" x="444" y="139" text-anchor="middle">GPU 6</text>
+  <text class="sub" x="444" y="150" text-anchor="middle">decode</text>
+
+  <!-- Output -->
+  <rect class="box" x="340" y="170" width="120" height="26" />
+  <text class="sub" x="400" y="187" text-anchor="middle">output tokens</text>
+
+  <!-- Bottom benefits -->
+  <text class="sub" x="260" y="228" text-anchor="middle">independent scaling ·  no interference  ·  hardware specialization</text>
+</svg>

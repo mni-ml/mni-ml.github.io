@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SpeculativeDecodingDemo from '../../components/demos/SpeculativeDecodingDemo';
+---
+
+<BaseLayout title="Speculative Decoding Demo — mni-ml" description="Compare standard inference and speculative decoding with a draft model, running entirely in your browser.">
+  <main>
+    <SpeculativeDecodingDemo client:only="react" />
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    min-height: calc(100dvh - 50px);
+  }
+</style>
