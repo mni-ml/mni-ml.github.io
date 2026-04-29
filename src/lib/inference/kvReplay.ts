@@ -7,8 +7,8 @@ import {
 import type { BPETokenizer } from './bpe';
 import type { CheckpointData, ModelConfig } from './model';
 
-export type BenchmarkMode = 'baseline' | 'kv-fp32' | 'kv-int8';
-export type CacheMode = 'none' | 'fp32' | 'int8';
+export type BenchmarkMode = 'baseline' | 'kv-fp32' | 'kv-int8' | 'mla';
+export type CacheMode = 'none' | 'fp32' | 'int8' | 'mla';
 
 export interface ReplayToken {
   id: number;
@@ -191,6 +191,14 @@ function triangularWork(size: number): number {
 function cacheBytesForMode(config: ModelConfig, cacheLen: number, cacheMode: CacheMode) {
   if (cacheMode === 'none') {
     return { usedBytes: 0, capacityBytes: 0 };
+  }
+  if (cacheMode === 'mla') {
+    const dKv = config.dKv ?? 0;
+    const bytesPerToken = config.nLayer * dKv * 4;
+    return {
+      usedBytes: cacheLen * bytesPerToken,
+      capacityBytes: config.blockSize * bytesPerToken,
+    };
   }
   const headDim = config.nEmbd / config.nHead;
   const rowsPerToken = config.nLayer * config.nHead;
@@ -968,6 +976,9 @@ export async function runBenchmarkMode(
       options.onStep,
       options.shouldStop,
     );
+  }
+  if (options.mode === 'mla') {
+    throw new Error("'mla' mode is handled by mlaReplay.runMlaTrace, not runBenchmarkMode");
   }
   return runKvTrace(
     model,

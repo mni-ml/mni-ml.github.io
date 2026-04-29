@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MlaDemo from '../../components/demos/MlaDemo';
+---
+
+<BaseLayout
+  title="Multi-head Latent Attention Demo — mni-ml"
+  description="Compare the KV-cache memory footprint of standard multi-head attention and multi-head latent attention (MLA), entirely in your browser."
+>
+  <main>
+    <MlaDemo client:only="react" />
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    min-height: calc(100dvh - 50px);
+  }
+</style>

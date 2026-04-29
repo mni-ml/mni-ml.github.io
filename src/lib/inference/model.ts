@@ -108,6 +108,7 @@ export interface ModelConfig {
   nLayer: number;
   blockSize: number;
   dropoutRate?: number;
+  dKv?: number;
 }
 
 export class MiniGPT extends Module {
