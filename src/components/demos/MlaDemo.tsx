@@ -57,16 +57,16 @@ function formatBytes(bytes: number): string {
 
 function MetricsSection({ run, step }: { run: RunTrace; step: StepTrace }) {
   const cards = [
-    { label: 'Cache used', value: formatBytes(step.cacheBytesUsed), highlight: true },
     { label: 'Total', value: formatMs(run.totalMs) },
     { label: 'ITL', value: formatMs(run.decodeMsPerToken) },
     { label: 'Throughput', value: formatRate(run.tokensPerSec) },
+    { label: 'Cache used', value: formatBytes(step.cacheBytesUsed) },
   ];
 
   return (
     <div className="mla-metrics">
       {cards.map(card => (
-        <div className={`mla-metric${card.highlight ? ' is-highlight' : ''}`} key={card.label}>
+        <div className="mla-metric" key={card.label}>
           <div className="mla-metric-label">{card.label}</div>
           <div className="mla-metric-value">{card.value}</div>
         </div>
@@ -435,10 +435,7 @@ export default function MlaDemo() {
 
           <div className="mla-section">
             <div className="mla-label" style={{ marginBottom: 8 }}>
-              Output{' '}
-              <span className="mla-mode-pill">
-                {useMla ? 'mla' : 'mha + fp32 kv'}
-              </span>
+              Output
             </div>
             <div ref={outputRef} className="mla-output">
               {visibleStepTrace ? (
@@ -470,10 +467,6 @@ export default function MlaDemo() {
               <MetricsSection run={visibleRun} step={visibleStepTrace} />
             ) : (
               <div className="mla-metrics">
-                <div className="mla-metric is-highlight">
-                  <div className="mla-metric-label">Cache used</div>
-                  <div className="mla-metric-value">—</div>
-                </div>
                 <div className="mla-metric">
                   <div className="mla-metric-label">Total</div>
                   <div className="mla-metric-value">—</div>
@@ -484,6 +477,10 @@ export default function MlaDemo() {
                 </div>
                 <div className="mla-metric">
                   <div className="mla-metric-label">Throughput</div>
+                  <div className="mla-metric-value">—</div>
+                </div>
+                <div className="mla-metric">
+                  <div className="mla-metric-label">Cache used</div>
                   <div className="mla-metric-value">—</div>
                 </div>
               </div>
@@ -623,18 +620,6 @@ export default function MlaDemo() {
           color: var(--muted);
           text-transform: uppercase;
           letter-spacing: 0.1em;
-        }
-
-        .mla-mode-pill {
-          font-family: var(--font-mono);
-          font-size: 10px;
-          color: var(--acc);
-          border: 0.5px solid var(--acc);
-          border-radius: 4px;
-          padding: 1px 6px;
-          margin-left: 6px;
-          letter-spacing: 0.05em;
-          text-transform: lowercase;
         }
 
         .mla-prompt {
@@ -805,11 +790,6 @@ export default function MlaDemo() {
 
         .mla-metric {
           padding: 10px 12px;
-        }
-
-        .mla-metric.is-highlight {
-          border-color: rgba(56, 189, 248, 0.45);
-          background: rgba(56, 189, 248, 0.06);
         }
 
         .mla-metric-value {

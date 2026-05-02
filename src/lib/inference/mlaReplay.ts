@@ -154,6 +154,7 @@ class MlaLatentCache {
 
 class MLACausalSelfAttention extends Module {
   nHead: number;
+  nEmbd: number;
   headDim: number;
   dKv: number;
   scale: number;
@@ -164,11 +165,22 @@ class MLACausalSelfAttention extends Module {
   valueUpProj!: Linear;
   outProj!: Linear;
 
+  // Absorbed weights, populated by absorbWeights() after parameters are loaded.
+  // The MLA inference trick: precompute Wq @ Wk^T and Wv @ Wo per head so that
+  // attention runs entirely in the dKv-dim latent space and we never have to
+  // re-up-project the cached latents to full K/V at every decode step.
+  private wQkPerHead: Tensor[] = [];
+  private bQkPerHead: Tensor[] = [];
+  private wVoPerHead: Tensor[] = [];
+  private bVoPerHead: Tensor[] = [];
+  private absorbed = false;
+
   constructor(nEmbd: number, nHead: number, dKv: number) {
     super();
     if (nEmbd % nHead !== 0) {
       throw new Error(`nEmbd (${nEmbd}) must be divisible by nHead (${nHead})`);
     }
+    this.nEmbd = nEmbd;
     this.nHead = nHead;
     this.headDim = nEmbd / nHead;
     this.dKv = dKv;
@@ -181,48 +193,114 @@ class MLACausalSelfAttention extends Module {
     this.outProj = new Linear(nEmbd, nEmbd);
   }
 
+  absorbWeights(): void {
+    const { nHead, nEmbd, headDim, dKv } = this;
+
+    const Wq = this.queryProj.weight.value.toFloat32();   // [nEmbd, nEmbd]
+    const bQ = this.queryProj.bias.value.toFloat32();     // [nEmbd]
+    const Wk = this.keyUpProj.weight.value.toFloat32();   // [dKv, nEmbd]
+    const Wv = this.valueUpProj.weight.value.toFloat32(); // [dKv, nEmbd]
+    const bV = this.valueUpProj.bias.value.toFloat32();   // [nEmbd]
+    const Wo = this.outProj.weight.value.toFloat32();     // [nEmbd, nEmbd]
+
+    this.wQkPerHead = [];
+    this.bQkPerHead = [];
+    this.wVoPerHead = [];
+    this.bVoPerHead = [];
+
+    for (let h = 0; h < nHead; h++) {
+      const headOffset = h * headDim;
+
+      // wQk[h] = Wq[:, headSlice] @ Wk[:, headSlice]^T   shape [nEmbd, dKv]
+      const wQkH = new Float32Array(nEmbd * dKv);
+      for (let i = 0; i < nEmbd; i++) {
+        for (let k = 0; k < dKv; k++) {
+          let s = 0;
+          for (let hd = 0; hd < headDim; hd++) {
+            s += Wq[i * nEmbd + headOffset + hd] * Wk[k * nEmbd + headOffset + hd];
+          }
+          wQkH[i * dKv + k] = s;
+        }
+      }
+
+      // bQk[h] = bQ[headSlice] @ Wk[:, headSlice]^T   shape [dKv]
+      // (bK contributes only a constant per row, which softmax cancels)
+      const bQkH = new Float32Array(dKv);
+      for (let k = 0; k < dKv; k++) {
+        let s = 0;
+        for (let hd = 0; hd < headDim; hd++) {
+          s += bQ[headOffset + hd] * Wk[k * nEmbd + headOffset + hd];
+        }
+        bQkH[k] = s;
+      }
+
+      // wVo[h] = Wv[:, headSlice] @ Wo[headSlice, :]   shape [dKv, nEmbd]
+      const wVoH = new Float32Array(dKv * nEmbd);
+      for (let r = 0; r < dKv; r++) {
+        for (let j = 0; j < nEmbd; j++) {
+          let s = 0;
+          for (let hd = 0; hd < headDim; hd++) {
+            s += Wv[r * nEmbd + headOffset + hd] * Wo[(headOffset + hd) * nEmbd + j];
+          }
+          wVoH[r * nEmbd + j] = s;
+        }
+      }
+
+      // bVo[h] = bV[headSlice] @ Wo[headSlice, :]   shape [nEmbd]
+      const bVoH = new Float32Array(nEmbd);
+      for (let j = 0; j < nEmbd; j++) {
+        let s = 0;
+        for (let hd = 0; hd < headDim; hd++) {
+          s += bV[headOffset + hd] * Wo[(headOffset + hd) * nEmbd + j];
+        }
+        bVoH[j] = s;
+      }
+
+      this.wQkPerHead.push(Tensor.fromFloat32(wQkH, [nEmbd, dKv]));
+      this.bQkPerHead.push(Tensor.fromFloat32(bQkH, [1, dKv]));
+      this.wVoPerHead.push(Tensor.fromFloat32(wVoH, [dKv, nEmbd]));
+      this.bVoPerHead.push(Tensor.fromFloat32(bVoH, [1, nEmbd]));
+    }
+
+    this.absorbed = true;
+  }
+
   forwardStep(x: Tensor, cache: MlaLatentCache): Tensor {
-    const [batch, seqLen, embd] = x.shape;
+    if (!this.absorbed) {
+      throw new Error('MLACausalSelfAttention.forwardStep called before absorbWeights()');
+    }
+    const [, seqLen] = x.shape;
     if (seqLen !== 1) {
       throw new Error(`mla attention expects seq_len=1, got ${seqLen}`);
     }
 
+    const { nHead, nEmbd, dKv } = this;
+
     const cKvNew = this.kvLatentNorm.forward(this.kvDownProj.forward(x));
     cache.append(cKvNew.toFloat32());
 
-    const cKvAll = cache.asTensor();
     const len = cache.length();
+    const cKv2D = cache.asTensor().view(len, dKv);     // [L, dKv]
+    const cKvT = cKv2D.permute(1, 0).contiguous();      // [dKv, L]
 
-    const kAll = this.keyUpProj.forward(cKvAll);
-    const vAll = this.valueUpProj.forward(cKvAll);
-    const qNew = this.queryProj.forward(x);
+    const xFlat = x.view(1, nEmbd);                     // [1, nEmbd]
 
-    const q = qNew
-      .view(batch, 1, this.nHead, this.headDim)
-      .permute(0, 2, 1, 3)
-      .contiguous()
-      .view(batch * this.nHead, 1, this.headDim);
-    const k = kAll
-      .view(batch, len, this.nHead, this.headDim)
-      .permute(0, 2, 1, 3)
-      .contiguous()
-      .view(batch * this.nHead, len, this.headDim);
-    const v = vAll
-      .view(batch, len, this.nHead, this.headDim)
-      .permute(0, 2, 1, 3)
-      .contiguous()
-      .view(batch * this.nHead, len, this.headDim);
+    let outSum: Tensor | null = null;
+    for (let h = 0; h < nHead; h++) {
+      const qInter = xFlat
+        .matmul(this.wQkPerHead[h])
+        .add(this.bQkPerHead[h]);                       // [1, dKv]
+      const scores = qInter.matmul(cKvT).mul(this.scale); // [1, L]
+      const weights = softmax(scores, -1);                // [1, L]
+      const tmp = weights.matmul(cKv2D);                  // [1, dKv]
+      const outH = tmp
+        .matmul(this.wVoPerHead[h])
+        .add(this.bVoPerHead[h]);                       // [1, nEmbd]
+      outSum = outSum === null ? outH : outSum.add(outH);
+    }
 
-    const scores = q.matmul(k.permute(0, 2, 1)).mul(this.scale);
-    const weights = softmax(scores, -1);
-    let out = weights.matmul(v);
-
-    out = out
-      .view(batch, this.nHead, 1, this.headDim)
-      .permute(0, 2, 1, 3)
-      .contiguous()
-      .view(batch, 1, embd);
-    return this.outProj.forward(out);
+    const final = outSum!.add(this.outProj.bias.value); // [1, nEmbd]
+    return final.view(1, 1, nEmbd);
   }
 }
 
@@ -291,6 +369,13 @@ class MlaReplayMiniGPT extends Module {
     );
   }
 
+  absorbWeights(): void {
+    for (let i = 0; i < this.config.nLayer; i++) {
+      const block = (this as any)[`block${i}`] as TransformerBlock;
+      block.attn.absorbWeights();
+    }
+  }
+
   forwardToken(tokenId: number, position: number, caches: MlaLatentCache[]): Tensor {
     let x = this.tokenEmb.forward([[tokenId]]);
     x = x.add(this.posEmb.forward([[position]]));
@@ -313,9 +398,12 @@ export function loadMlaModel(checkpoint: MlaCheckpointData, tokenizer: BPETokeni
   for (const [name, param] of model.namedParameters()) {
     const saved = checkpoint.parameters[name];
     if (!saved) continue;
-    param.update(Tensor.fromFloat32(new Float32Array(saved.data), saved.shape));
+    (param as Parameter<Tensor>).update(
+      Tensor.fromFloat32(new Float32Array(saved.data), saved.shape),
+    );
   }
   model.eval();
+  model.absorbWeights();
   return model;
 }
 
