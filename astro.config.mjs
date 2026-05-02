@@ -7,15 +7,19 @@ import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 import rehypeKatex from 'rehype-katex';
 
+import cloudflare from '@astrojs/cloudflare';
+
 export default defineConfig({
   site: 'https://mni-ml.github.io',
   base: '/',
   output: 'static',
+
   integrations: [
     mdx(),
     react({ include: ['**/tstorch/**', '**/demos/**'] }),
     sitemap(),
   ],
+
   markdown: {
     remarkPlugins: [remarkMath, remarkSmartypants],
     rehypePlugins: [[rehypeKatex, { output: 'html' }]],
@@ -23,9 +27,12 @@ export default defineConfig({
       theme: 'github-dark',
     },
   },
+
   vite: {
     optimizeDeps: {
       exclude: ['@mni-ml/framework'],
     },
   },
+
+  adapter: cloudflare(),
 });
